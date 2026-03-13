@@ -293,7 +293,7 @@ td{padding:10px 12px;font-size:13px;vertical-align:middle}
 }
 
 /* Sidebar drawer on mobile */
-.sb-drawer-ovl{display:none;position:fixed;left:0;right:0;top:56px;bottom:64px;background:rgba(0,0,0,.5);z-index:260;backdrop-filter:blur(2px)}
+.sb-drawer-ovl{display:none;position:fixed;left:280px;right:0;top:56px;bottom:64px;background:rgba(0,0,0,.5);z-index:260}
 
 /* Mobile EPI card (replaces table rows) */
 .epi-cards{display:none;flex-direction:column;gap:10px;padding:12px;overflow-y:auto;flex:1}
@@ -325,7 +325,7 @@ td{padding:10px 12px;font-size:13px;vertical-align:middle}
   .sidebar{
     position:fixed;left:0;top:56px;bottom:64px;z-index:270;
     transform:translateX(-100%);transition:transform .3s ease;
-    width:280px;box-shadow:4px 0 24px rgba(0,0,0,.5);
+    width:280px;box-shadow:8px 0 32px rgba(0,0,0,.7);background:var(--s1);
   }
   .sidebar.mob-open{transform:translateX(0)}
   .sb-drawer-ovl.visible{display:block !important}
