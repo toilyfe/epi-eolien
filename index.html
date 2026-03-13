@@ -293,7 +293,7 @@ td{padding:10px 12px;font-size:13px;vertical-align:middle}
 }
 
 /* Sidebar drawer on mobile */
-.sb-drawer-ovl{display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:250;backdrop-filter:blur(2px)}
+.sb-drawer-ovl{display:none;position:fixed;left:0;right:0;top:56px;bottom:64px;background:rgba(0,0,0,.5);z-index:260;backdrop-filter:blur(2px)}
 
 /* Mobile EPI card (replaces table rows) */
 .epi-cards{display:none;flex-direction:column;gap:10px;padding:12px;overflow-y:auto;flex:1}
@@ -323,12 +323,12 @@ td{padding:10px 12px;font-size:13px;vertical-align:middle}
 
   /* Masquer sidebar desktop */
   .sidebar{
-    position:fixed;left:0;top:0;bottom:0;z-index:260;
+    position:fixed;left:0;top:56px;bottom:64px;z-index:270;
     transform:translateX(-100%);transition:transform .3s ease;
-    width:280px;
+    width:280px;box-shadow:4px 0 24px rgba(0,0,0,.5);
   }
   .sidebar.mob-open{transform:translateX(0)}
-  .sb-drawer-ovl{display:block}
+  .sb-drawer-ovl.visible{display:block !important}
 
   /* Layout vertical */
   .main{flex-direction:column}
@@ -1391,14 +1391,16 @@ function mobNav(view){
 
 function openSidebar(){
   document.getElementById('sidebar').classList.add('mob-open');
-  document.getElementById('sbOvl').style.display = 'block';
+  document.getElementById('sbOvl').classList.add('visible');
   document.getElementById('mbn-techs').classList.add('active');
 }
 
 function closeSidebar(){
   document.getElementById('sidebar').classList.remove('mob-open');
-  document.getElementById('sbOvl').style.display = 'none';
+  document.getElementById('sbOvl').classList.remove('visible');
   document.getElementById('mbn-techs').classList.remove('active');
+  // Switch active to list
+  document.getElementById('mbn-list')?.classList.add('active');
 }
 
 function isMobile(){ return window.innerWidth <= 768; }
