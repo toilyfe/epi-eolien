@@ -170,7 +170,7 @@ td{padding:10px 12px;font-size:13px;vertical-align:middle}
 .empty .ico{font-size:44px;margin-bottom:12px}
 
 /* DETAIL */
-.detail{width:420px;flex-shrink:0;background:var(--s1);border-left:1px solid var(--border);overflow-y:auto;-webkit-overflow-scrolling:touch;display:flex;flex-direction:column;transform:translateX(100%);transition:transform .25s ease;position:absolute;right:0;top:0;bottom:0;z-index:20}
+.detail{width:420px;flex-shrink:0;background:var(--s1);border-left:1px solid var(--border);overflow-y:auto;-webkit-overflow-scrolling:touch;display:flex;flex-direction:column;transform:translateX(100%);transition:transform .25s ease;position:absolute;right:0;top:0;bottom:0;z-index:400}
 .detail.open{transform:translateX(0);position:relative}
 .detail-hdr{padding:18px 20px 14px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:flex-start}
 .detail-body{padding:16px 20px;flex:1}
@@ -198,7 +198,7 @@ td{padding:10px 12px;font-size:13px;vertical-align:middle}
 .assignee-chip .mini-av{width:20px;height:20px;font-size:8px}
 
 /* MODALS */
-.overlay{position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:900;display:none;align-items:center;justify-content:center;backdrop-filter:blur(6px)}
+.overlay{position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:600;display:none;align-items:center;justify-content:center;backdrop-filter:blur(4px)}
 .overlay.open{display:flex}
 .modal{background:var(--s1);border:1px solid var(--border);border-radius:8px;padding:28px;width:640px;max-width:96vw;max-height:92vh;overflow-y:auto;animation:slideUp .2s ease}
 .modal-title{font-family:var(--cond);font-size:20px;font-weight:800;margin-bottom:20px;display:flex;justify-content:space-between;align-items:center;letter-spacing:.04em}
@@ -246,7 +246,7 @@ td{padding:10px 12px;font-size:13px;vertical-align:middle}
 .menu-item.danger:hover{background:rgba(239,68,68,.08)}
 
 /* TOAST */
-#toasts{position:fixed;bottom:20px;right:20px;z-index:500;display:flex;flex-direction:column;gap:8px}
+#toasts{position:fixed;bottom:20px;right:20px;z-index:1000;display:flex;flex-direction:column;gap:8px}
 .toast{background:var(--s2);border:1px solid var(--border);border-radius:6px;padding:11px 16px;font-size:13px;display:flex;align-items:center;gap:10px;box-shadow:0 8px 32px rgba(0,0,0,.6);min-width:260px;animation:tin .25s ease}
 .toast-ok{border-color:rgba(16,185,129,.4)}.toast-warn{border-color:rgba(245,158,11,.4)}.toast-err{border-color:rgba(239,68,68,.4)}
 
@@ -263,7 +263,7 @@ td{padding:10px 12px;font-size:13px;vertical-align:middle}
 /* Bottom nav bar (mobile only) */
 .mob-nav{
   display:none;
-  position:fixed;bottom:0;left:0;right:0;z-index:300;
+  position:fixed;bottom:0;left:0;right:0;z-index:800;
   background:var(--s1);border-top:1px solid var(--border);
   height:64px;
   grid-template-columns:repeat(4,1fr);
@@ -293,7 +293,7 @@ td{padding:10px 12px;font-size:13px;vertical-align:middle}
 }
 
 /* Sidebar drawer on mobile */
-.sb-drawer-ovl{display:none;position:fixed;left:280px;right:0;top:56px;bottom:64px;background:rgba(0,0,0,.5);z-index:260}
+.sb-drawer-ovl{display:none;position:fixed;left:280px;right:0;top:56px;bottom:64px;background:rgba(0,0,0,.5);z-index:510}
 
 /* Mobile EPI card (replaces table rows) */
 .epi-cards{display:none;flex-direction:column;gap:10px;padding:12px 12px 80px;overflow-y:auto;-webkit-overflow-scrolling:touch;flex:1;min-height:0}
@@ -347,7 +347,7 @@ td{padding:10px 12px;font-size:13px;vertical-align:middle}
   .sidebar{
     position:fixed;top:0;left:0;bottom:0;
     width:85vw;max-width:310px;
-    z-index:600;
+    z-index:500;
     transform:translateX(-110%);
     transition:transform .28s cubic-bezier(.4,0,.2,1);
     overflow-y:scroll;
@@ -361,7 +361,7 @@ td{padding:10px 12px;font-size:13px;vertical-align:middle}
   .sb-drawer-ovl{
     position:fixed;top:0;left:0;right:0;bottom:0;
     background:rgba(0,0,0,.6);
-    z-index:850;
+    z-index:510;
     display:none;
     -webkit-tap-highlight-color:transparent;
   }
@@ -371,7 +371,7 @@ td{padding:10px 12px;font-size:13px;vertical-align:middle}
   .detail{
     position:fixed;top:52px;left:0;right:0;bottom:64px;
     width:100%;
-    z-index:500;
+    z-index:400;
     transform:translateY(110%);
     transition:transform .3s cubic-bezier(.4,0,.2,1);
     overflow-y:scroll;
@@ -387,7 +387,7 @@ td{padding:10px 12px;font-size:13px;vertical-align:middle}
   .mob-nav{
     display:grid !important;
     position:fixed;bottom:0;left:0;right:0;
-    height:64px;z-index:960;
+    height:64px;z-index:800;
     background:var(--s1);
     border-top:1px solid var(--border);
   }
@@ -488,7 +488,7 @@ td{padding:10px 12px;font-size:13px;vertical-align:middle}
 </div>
 
 <!-- SCAN MODAL -->
-<div class="overlay" id="scanModal" style="z-index:950" onclick="if(event.target===this)closeScanModal()">
+<div class="overlay" id="scanModal" style="z-index:700" onclick="if(event.target===this)closeScanModal()">
   <div style="background:var(--s1);border:1px solid var(--border);border-radius:12px;padding:32px;width:360px;max-width:94vw;text-align:center;animation:slideUp .2s ease;position:relative">
     <button onclick="closeScanModal()" style="position:absolute;top:14px;right:16px;background:none;border:none;color:var(--muted);font-size:20px;cursor:pointer">✕</button>
 
@@ -724,7 +724,7 @@ td{padding:10px 12px;font-size:13px;vertical-align:middle}
 </div>
 
 <!-- LIGHTBOX -->
-<div class="overlay" id="lightbox" style="z-index:980" onclick="closeLightbox()"><img id="lbImg" style="max-width:90vw;max-height:90vh;border-radius:6px;object-fit:contain"/></div>
+<div class="overlay" id="lightbox" style="z-index:900" onclick="closeLightbox()"><img id="lbImg" style="max-width:90vw;max-height:90vh;border-radius:6px;object-fit:contain"/></div>
 
 <!-- USER MENU -->
 <div class="user-menu" id="userMenu">
@@ -735,7 +735,7 @@ td{padding:10px 12px;font-size:13px;vertical-align:middle}
   <div id="menuItems"></div>
   <button class="menu-item danger" onclick="logout()">⏏ Déconnexion</button>
 </div>
-<div id="menuOvl" style="display:none;position:fixed;inset:0;z-index:199" onclick="closeMenu()"></div>
+<div id="menuOvl" style="display:none;position:fixed;inset:0;z-index:550" onclick="closeMenu()"></div>
 <div id="toasts"></div>
 
 <script>
