@@ -1,0 +1,1482 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>WINDGUARD EPI — Registre Éolien</title>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@300;400;500;600;700;800&family=Barlow:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#07090d;--s1:#0d1117;--s2:#131820;--s3:#1a2130;--border:#1e2a3a;
+  --blue:#0ea5e9;--cyan:#06b6d4;--green:#10b981;--yellow:#f59e0b;
+  --red:#ef4444;--orange:#f97316;--purple:#a855f7;--text:#e2e8f0;--muted:#64748b;
+  --cond:'Barlow Condensed',sans-serif;--body:'Barlow',sans-serif;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{height:100%;overflow:hidden}
+body{background:var(--bg);color:var(--text);font-family:var(--body);display:flex;flex-direction:column}
+body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellipse 600px 400px at 80% 20%,rgba(14,165,233,.06) 0%,transparent 70%),radial-gradient(ellipse 400px 600px at 10% 80%,rgba(6,182,212,.04) 0%,transparent 70%);pointer-events:none;z-index:0}
+@keyframes spin{to{transform:rotate(360deg)}}
+@keyframes slideUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+@keyframes ring{0%,100%{border-color:var(--blue)}50%{border-color:var(--cyan)}}
+@keyframes ringOut{0%,100%{transform:scale(1);opacity:.3}50%{transform:scale(1.3);opacity:0}}
+@keyframes tin{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+
+/* ═══ LOGIN ═══ */
+#loginScreen{position:fixed;inset:0;z-index:1000;background:var(--bg);display:flex;align-items:center;justify-content:center}
+#loginScreen::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse 800px 600px at 50% 40%,rgba(14,165,233,.07) 0%,transparent 70%);pointer-events:none}
+.login-box{background:var(--s1);border:1px solid var(--border);border-radius:12px;padding:40px;width:420px;max-width:94vw;position:relative;z-index:1;box-shadow:0 24px 80px rgba(0,0,0,.6);animation:slideUp .3s ease}
+.login-logo{text-align:center;margin-bottom:32px}
+.login-turbine{font-size:40px;animation:spin 8s linear infinite;display:inline-block}
+.login-logo h1{font-family:var(--cond);font-size:28px;font-weight:800;letter-spacing:.08em;margin-top:8px}
+.login-logo h1 em{color:var(--blue);font-style:normal}
+.login-logo p{font-size:13px;color:var(--muted);margin-top:4px}
+.role-cards{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:24px}
+.role-card{border:2px solid var(--border);border-radius:8px;padding:16px 12px;cursor:pointer;transition:all .2s;text-align:center}
+.role-card:hover{border-color:var(--muted)}
+.role-card.sel-admin{border-color:var(--blue);background:rgba(14,165,233,.06)}
+.role-card.sel-visitor{border-color:var(--purple);background:rgba(168,85,247,.06)}
+.rc-icon{font-size:28px;margin-bottom:6px}
+.rc-title{font-family:var(--cond);font-size:14px;font-weight:700;letter-spacing:.04em}
+.rc-desc{font-size:11px;color:var(--muted);margin-top:3px}
+.lf{display:flex;flex-direction:column;gap:5px;margin-bottom:14px}
+.lf label{font-family:var(--cond);font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.08em}
+.lf input{background:var(--s2);border:1px solid var(--border);border-radius:5px;padding:11px 14px;color:var(--text);font-family:var(--body);font-size:14px;outline:none;transition:border-color .15s}
+.lf input:focus{border-color:var(--blue)}
+.btn-login{width:100%;padding:13px;border:none;border-radius:6px;cursor:pointer;font-family:var(--cond);font-size:15px;font-weight:800;letter-spacing:.06em;transition:all .2s;margin-top:4px}
+.btn-login-admin{background:var(--blue);color:#07090d}
+.btn-login-admin:hover{filter:brightness(1.12);box-shadow:0 0 24px rgba(14,165,233,.4)}
+.btn-login-visitor{background:var(--purple);color:#fff}
+.btn-login-visitor:hover{filter:brightness(1.12);box-shadow:0 0 24px rgba(168,85,247,.4)}
+.login-err{background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.3);border-radius:5px;padding:10px 14px;font-size:13px;color:var(--red);margin-top:10px;display:none}
+.login-hint{margin-top:20px;padding:14px;background:var(--s2);border:1px solid var(--border);border-radius:6px;font-size:12px;color:var(--muted)}
+.login-hint strong{color:var(--text);display:block;margin-bottom:4px;font-family:var(--cond);letter-spacing:.04em}
+
+/* ═══ APP ═══ */
+#appWrap{display:none;flex-direction:column;height:100%}
+
+/* HEADER */
+header{background:rgba(13,17,23,.95);border-bottom:1px solid var(--border);padding:0 20px;height:56px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;position:relative;z-index:10;backdrop-filter:blur(10px)}
+.logo{font-family:var(--cond);font-size:22px;font-weight:800;letter-spacing:.08em;display:flex;align-items:center;gap:10px}
+.logo-turbine{font-size:24px;animation:spin 8s linear infinite;display:inline-block}
+.logo em{color:var(--blue);font-style:normal}
+.hdr-right{display:flex;align-items:center;gap:10px}
+.hdr-pills{display:flex;gap:8px}
+.pill{font-family:var(--cond);font-size:12px;font-weight:600;letter-spacing:.06em;padding:4px 12px;border-radius:3px;display:flex;align-items:center;gap:5px}
+.pill-g{background:rgba(16,185,129,.12);color:var(--green);border:1px solid rgba(16,185,129,.25)}
+.pill-y{background:rgba(245,158,11,.12);color:var(--yellow);border:1px solid rgba(245,158,11,.25)}
+.pill-r{background:rgba(239,68,68,.12);color:var(--red);border:1px solid rgba(239,68,68,.25)}
+.user-badge{display:flex;align-items:center;gap:8px;padding:5px 12px;border-radius:5px;border:1px solid var(--border);background:var(--s2);cursor:pointer;transition:all .15s;font-family:var(--cond);font-size:13px;font-weight:600;letter-spacing:.03em}
+.user-badge:hover{border-color:var(--muted)}
+.u-av{width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;flex-shrink:0}
+.av-admin{background:rgba(14,165,233,.2);border:1px solid rgba(14,165,233,.4)}
+.av-visitor{background:rgba(168,85,247,.2);border:1px solid rgba(168,85,247,.4)}
+.role-tag{font-size:10px;padding:2px 7px;border-radius:3px;font-weight:700;letter-spacing:.05em}
+.role-admin{background:rgba(14,165,233,.15);color:var(--blue)}
+.role-visitor{background:rgba(168,85,247,.15);color:var(--purple)}
+.ro-banner{background:rgba(168,85,247,.08);border-bottom:1px solid rgba(168,85,247,.2);padding:7px 20px;font-family:var(--cond);font-size:12px;font-weight:600;letter-spacing:.05em;color:var(--purple);display:flex;align-items:center;gap:8px;flex-shrink:0}
+
+/* NFC */
+.nfc-bar{background:var(--s1);border-bottom:1px solid var(--border);padding:10px 20px;display:flex;align-items:center;gap:12px;flex-shrink:0;position:relative;z-index:10}
+.nfc-ring{width:36px;height:36px;border-radius:50%;border:2px solid var(--blue);display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0;animation:ring 2s ease-in-out infinite;position:relative}
+.nfc-ring::after{content:'';position:absolute;inset:-6px;border-radius:50%;border:1px solid var(--blue);opacity:.3;animation:ringOut 2s ease-in-out infinite}
+.nfc-input{flex:1;background:transparent;border:none;outline:none;color:var(--blue);font-family:'Barlow Condensed',monospace;font-size:16px;letter-spacing:.05em}
+.nfc-input::placeholder{color:var(--muted)}
+.nfc-label{font-family:var(--cond);font-size:11px;color:var(--muted);letter-spacing:.08em;text-transform:uppercase;flex-shrink:0}
+
+/* LAYOUT */
+.main{display:flex;flex:1;overflow:hidden;position:relative;z-index:1}
+
+/* ═══ SIDEBAR — TECHNICIENS ═══ */
+.sidebar{width:220px;flex-shrink:0;background:var(--s1);border-right:1px solid var(--border);overflow-y:auto;display:flex;flex-direction:column}
+.sb-header{padding:14px 16px 10px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--border);flex-shrink:0}
+.sb-title{font-family:var(--cond);font-size:11px;font-weight:700;color:var(--muted);letter-spacing:.12em;text-transform:uppercase}
+.btn-add-tech{background:rgba(14,165,233,.1);border:1px solid rgba(14,165,233,.25);color:var(--blue);font-family:var(--cond);font-size:11px;font-weight:700;padding:3px 8px;border-radius:3px;cursor:pointer;letter-spacing:.04em;transition:all .15s}
+.btn-add-tech:hover{background:rgba(14,165,233,.2)}
+
+/* "Tous" item */
+.tech-all{padding:10px 16px;font-family:var(--cond);font-size:14px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:space-between;border-left:3px solid transparent;transition:all .15s;color:var(--muted)}
+.tech-all:hover{background:var(--s2);color:var(--text)}
+.tech-all.active{background:rgba(14,165,233,.08);color:var(--blue);border-left-color:var(--blue)}
+.tc{font-size:11px;background:var(--s3);padding:1px 7px;border-radius:10px;color:var(--muted)}
+.tech-all.active .tc{background:rgba(14,165,233,.2);color:var(--blue)}
+
+/* Technician card in sidebar */
+.tech-item{border-left:3px solid transparent;cursor:pointer;transition:all .15s}
+.tech-item:hover .tech-card{background:var(--s2)}
+.tech-item.active{border-left-color:var(--blue)}
+.tech-item.active .tech-card{background:rgba(14,165,233,.06)}
+.tech-card{padding:10px 16px;display:flex;align-items:center;gap:10px;transition:background .15s}
+.tech-avatar{width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:var(--cond);font-size:14px;font-weight:800;flex-shrink:0;border:2px solid transparent}
+.tech-info{flex:1;min-width:0}
+.tech-name{font-family:var(--cond);font-size:13px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tech-epi-count{font-size:11px;color:var(--muted);margin-top:1px}
+.tech-item.active .tech-name{color:var(--blue)}
+.tech-item.active .tech-avatar{border-color:rgba(14,165,233,.4)}
+
+/* EPI mini chips under tech */
+.tech-epis-preview{padding:0 16px 10px 58px;display:flex;flex-wrap:wrap;gap:4px}
+.epi-chip{font-family:var(--cond);font-size:10px;padding:2px 7px;border-radius:3px;background:var(--s3);color:var(--muted);border:1px solid var(--border);white-space:nowrap;cursor:pointer;transition:all .12s}
+.epi-chip:hover{border-color:var(--blue);color:var(--blue)}
+.epi-chip.nok{background:rgba(239,68,68,.08);color:var(--red);border-color:rgba(239,68,68,.2)}
+.epi-chip.soon{background:rgba(245,158,11,.08);color:var(--yellow);border-color:rgba(245,158,11,.2)}
+
+.sb-bottom{margin-top:auto;padding:14px 16px;border-top:1px solid var(--border);display:flex;flex-direction:column;gap:6px}
+
+/* CONTENT */
+.content{flex:1;overflow:hidden;display:flex;flex-direction:column}
+.toolbar{background:var(--s1);border-bottom:1px solid var(--border);padding:10px 16px;display:flex;gap:8px;align-items:center;flex-wrap:wrap;flex-shrink:0}
+.btn{font-family:var(--cond);font-size:13px;font-weight:700;letter-spacing:.04em;padding:8px 16px;border-radius:4px;border:none;cursor:pointer;display:flex;align-items:center;gap:6px;transition:all .15s;white-space:nowrap}
+.btn-blue{background:var(--blue);color:#07090d}
+.btn-blue:hover{filter:brightness(1.15);box-shadow:0 0 20px rgba(14,165,233,.3)}
+.btn-ghost{background:var(--s2);color:var(--text);border:1px solid var(--border)}
+.btn-ghost:hover{border-color:var(--blue);color:var(--blue)}
+.btn-sm{padding:6px 12px;font-size:12px}
+.search-wrap{flex:1;min-width:160px;background:var(--s2);border:1px solid var(--border);border-radius:4px;padding:7px 12px;display:flex;align-items:center;gap:8px}
+.search-wrap input{background:transparent;border:none;outline:none;color:var(--text);font-family:var(--body);font-size:13px;width:100%}
+.search-wrap input::placeholder{color:var(--muted)}
+
+/* TABLE */
+.table-container{flex:1;overflow-y:auto}
+table{width:100%;border-collapse:collapse}
+thead{position:sticky;top:0;z-index:5}
+thead tr{background:var(--s2);border-bottom:2px solid var(--border)}
+th{font-family:var(--cond);font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.1em;padding:11px 12px;text-align:left;cursor:pointer;white-space:nowrap;user-select:none}
+th:hover{color:var(--blue)}
+tbody tr{border-bottom:1px solid rgba(30,42,58,.6);transition:background .1s;cursor:pointer}
+tbody tr:hover{background:rgba(14,165,233,.04)}
+tbody tr.row-sel{background:rgba(14,165,233,.08);border-left:2px solid var(--blue)}
+td{padding:10px 12px;font-size:13px;vertical-align:middle}
+.td-code{font-family:var(--cond);font-size:12px;letter-spacing:.04em;color:var(--blue);background:rgba(14,165,233,.08);padding:3px 8px;border-radius:3px;border:1px solid rgba(14,165,233,.2);display:inline-block}
+.td-name{font-weight:600;font-size:13px}
+.td-sub{font-size:11px;color:var(--muted);margin-top:2px}
+
+/* User column — stacked avatars for multi-assign */
+.assignees{display:flex;align-items:center;gap:4px;flex-wrap:wrap}
+.mini-av{width:22px;height:22px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:var(--cond);font-size:9px;font-weight:800;border:1px solid var(--border);flex-shrink:0;cursor:default}
+.assignee-name{font-size:11px;color:var(--muted);font-family:var(--cond)}
+
+.etat-badge{font-family:var(--cond);font-size:12px;font-weight:700;letter-spacing:.04em;padding:4px 10px;border-radius:3px;display:inline-flex;align-items:center;gap:5px;white-space:nowrap}
+.etat-neuf{background:rgba(14,165,233,.12);color:var(--blue);border:1px solid rgba(14,165,233,.3)}
+.etat-tres-bon{background:rgba(16,185,129,.12);color:var(--green);border:1px solid rgba(16,185,129,.3)}
+.etat-bon{background:rgba(6,182,212,.12);color:var(--cyan);border:1px solid rgba(6,182,212,.3)}
+.etat-surveiller{background:rgba(245,158,11,.12);color:var(--yellow);border:1px solid rgba(245,158,11,.3)}
+.etat-mis-service{background:rgba(249,115,22,.12);color:var(--orange);border:1px solid rgba(249,115,22,.3)}
+.ok-badge{font-family:var(--cond);font-size:12px;font-weight:700;padding:3px 10px;border-radius:3px}
+.ok-ok{background:rgba(16,185,129,.15);color:var(--green);border:1px solid rgba(16,185,129,.3)}
+.ok-nok{background:rgba(239,68,68,.15);color:var(--red);border:1px solid rgba(239,68,68,.3)}
+.date-ok{color:var(--text)}.date-soon{color:var(--yellow)}.date-exp{color:var(--red);font-weight:600}
+.empty{text-align:center;padding:60px 20px;color:var(--muted);font-size:14px}
+.empty .ico{font-size:44px;margin-bottom:12px}
+
+/* DETAIL */
+.detail{width:420px;flex-shrink:0;background:var(--s1);border-left:1px solid var(--border);overflow-y:auto;display:flex;flex-direction:column;transform:translateX(100%);transition:transform .25s ease;position:absolute;right:0;top:0;bottom:0;z-index:20}
+.detail.open{transform:translateX(0);position:relative}
+.detail-hdr{padding:18px 20px 14px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:flex-start}
+.detail-body{padding:16px 20px;flex:1}
+.d-section{margin-bottom:20px}
+.d-stitle{font-family:var(--cond);font-size:10px;font-weight:700;color:var(--muted);letter-spacing:.12em;text-transform:uppercase;margin-bottom:10px;padding-bottom:6px;border-bottom:1px solid var(--border)}
+.d-row{display:flex;justify-content:space-between;align-items:center;padding:7px 0;border-bottom:1px solid rgba(30,42,58,.5);font-size:13px}
+.d-row:last-child{border-bottom:none}
+.d-key{color:var(--muted);flex-shrink:0}
+.d-val{font-family:var(--cond);font-size:13px;text-align:right;max-width:230px;word-break:break-word}
+.photo-zone{background:var(--s2);border:2px dashed var(--border);border-radius:6px;padding:20px;text-align:center;cursor:pointer;transition:all .2s;margin-bottom:12px}
+.photo-zone:hover{border-color:var(--blue);background:rgba(14,165,233,.05)}
+.photo-zone.ro{cursor:default;opacity:.5}
+.photo-zone.ro:hover{border-color:var(--border);background:var(--s2)}
+.photo-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:12px}
+.photo-thumb{width:100%;aspect-ratio:1;object-fit:cover;border-radius:4px;border:1px solid var(--border);cursor:pointer}
+.photo-thumb:hover{border-color:var(--blue)}
+.photo-input{display:none}
+.ctrl-item{background:var(--s2);border:1px solid var(--border);border-radius:4px;padding:10px 12px;margin-bottom:8px}
+.ctrl-date{font-family:var(--cond);font-size:11px;color:var(--muted)}
+.ctrl-res{font-size:13px;margin-top:3px;font-weight:500}
+
+/* Multi-assign chips in detail */
+.assignee-list{display:flex;flex-wrap:wrap;gap:6px}
+.assignee-chip{display:flex;align-items:center;gap:6px;background:var(--s2);border:1px solid var(--border);border-radius:4px;padding:5px 10px;font-size:12px}
+.assignee-chip .mini-av{width:20px;height:20px;font-size:8px}
+
+/* MODALS */
+.overlay{position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:100;display:none;align-items:center;justify-content:center;backdrop-filter:blur(6px)}
+.overlay.open{display:flex}
+.modal{background:var(--s1);border:1px solid var(--border);border-radius:8px;padding:28px;width:640px;max-width:96vw;max-height:92vh;overflow-y:auto;animation:slideUp .2s ease}
+.modal-title{font-family:var(--cond);font-size:20px;font-weight:800;margin-bottom:20px;display:flex;justify-content:space-between;align-items:center;letter-spacing:.04em}
+.modal-close{background:none;border:none;color:var(--muted);cursor:pointer;font-size:22px;line-height:1}
+.modal-close:hover{color:var(--text)}
+.fg{display:flex;flex-direction:column;gap:5px;margin-bottom:14px}
+.fg label{font-family:var(--cond);font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.08em}
+.fg input,.fg select,.fg textarea{background:var(--s2);border:1px solid var(--border);border-radius:4px;padding:9px 12px;color:var(--text);font-family:var(--body);font-size:13px;outline:none;transition:border-color .15s}
+.fg input:focus,.fg select:focus,.fg textarea:focus{border-color:var(--blue)}
+.fg select option{background:var(--s2)}
+.fg textarea{resize:vertical;min-height:70px}
+.fgrid{display:grid;grid-template-columns:1fr 1fr;gap:0 16px}
+.fgrid .fg.full{grid-column:1/-1}
+.nfc-wrap{display:flex;gap:8px}
+.nfc-wrap input{flex:1}
+.btn-gen{background:rgba(14,165,233,.1);border:1px solid rgba(14,165,233,.3);color:var(--blue);font-family:var(--cond);font-size:12px;font-weight:700;padding:0 14px;border-radius:4px;cursor:pointer;letter-spacing:.04em;white-space:nowrap;transition:all .15s}
+.btn-gen:hover{background:rgba(14,165,233,.2)}
+.modal-foot{margin-top:20px;display:flex;justify-content:flex-end;gap:8px}
+
+/* Multi-select user checkboxes */
+.user-checkboxes{display:flex;flex-direction:column;gap:6px;max-height:160px;overflow-y:auto;background:var(--s2);border:1px solid var(--border);border-radius:4px;padding:8px}
+.user-cb-row{display:flex;align-items:center;gap:10px;padding:6px 8px;border-radius:4px;cursor:pointer;transition:background .12s}
+.user-cb-row:hover{background:var(--s3)}
+.user-cb-row input[type=checkbox]{accent-color:var(--blue);width:15px;height:15px;cursor:pointer;flex-shrink:0}
+.user-cb-row .mini-av{width:24px;height:24px;font-size:10px}
+.user-cb-label{font-family:var(--cond);font-size:13px;font-weight:600}
+
+/* Technician modal */
+.tech-color-grid{display:grid;grid-template-columns:repeat(8,1fr);gap:6px;margin-top:4px}
+.color-dot{width:26px;height:26px;border-radius:50%;cursor:pointer;border:2px solid transparent;transition:all .15s}
+.color-dot:hover{transform:scale(1.2)}
+.color-dot.sel{border-color:#fff;box-shadow:0 0 0 2px rgba(255,255,255,.3)}
+
+/* Users mgmt table */
+.users-table{width:100%;border-collapse:collapse}
+.users-table th{font-family:var(--cond);font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;padding:8px 10px;border-bottom:1px solid var(--border);text-align:left}
+.users-table td{padding:10px;border-bottom:1px solid rgba(30,42,58,.5);font-size:13px}
+.users-table tr:last-child td{border-bottom:none}
+
+/* User menu */
+.user-menu{display:none;position:fixed;top:62px;right:20px;z-index:200;background:var(--s1);border:1px solid var(--border);border-radius:8px;padding:8px;min-width:200px;box-shadow:0 8px 32px rgba(0,0,0,.5)}
+.menu-item{width:100%;padding:9px 12px;background:none;border:none;color:var(--text);font-family:var(--cond);font-size:13px;font-weight:600;text-align:left;cursor:pointer;border-radius:4px;display:flex;align-items:center;gap:8px}
+.menu-item:hover{background:rgba(255,255,255,.04)}
+.menu-item.danger{color:var(--red)}
+.menu-item.danger:hover{background:rgba(239,68,68,.08)}
+
+/* TOAST */
+#toasts{position:fixed;bottom:20px;right:20px;z-index:500;display:flex;flex-direction:column;gap:8px}
+.toast{background:var(--s2);border:1px solid var(--border);border-radius:6px;padding:11px 16px;font-size:13px;display:flex;align-items:center;gap:10px;box-shadow:0 8px 32px rgba(0,0,0,.6);min-width:260px;animation:tin .25s ease}
+.toast-ok{border-color:rgba(16,185,129,.4)}.toast-warn{border-color:rgba(245,158,11,.4)}.toast-err{border-color:rgba(239,68,68,.4)}
+
+::-webkit-scrollbar{width:5px;height:5px}
+::-webkit-scrollbar-track{background:var(--s1)}
+::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}
+::-webkit-scrollbar-thumb:hover{background:var(--muted)}
+
+
+/* ═══════════════════════════════════════
+   RESPONSIVE — MOBILE FIRST
+═══════════════════════════════════════ */
+
+/* Bottom nav bar (mobile only) */
+.mob-nav{
+  display:none;
+  position:fixed;bottom:0;left:0;right:0;z-index:300;
+  background:var(--s1);border-top:1px solid var(--border);
+  height:64px;
+  grid-template-columns:repeat(4,1fr);
+  align-items:stretch;
+  backdrop-filter:blur(10px);
+}
+.mob-nav-btn{
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:3px;border:none;background:none;color:var(--muted);cursor:pointer;
+  font-family:var(--cond);font-size:10px;font-weight:700;letter-spacing:.05em;
+  text-transform:uppercase;transition:all .15s;padding:8px 4px;
+  position:relative;
+}
+.mob-nav-btn.active{color:var(--blue)}
+.mob-nav-btn .ico{font-size:22px;line-height:1}
+.mob-nav-scan{
+  background:var(--blue);color:#07090d !important;
+  border-radius:12px;margin:8px 6px;justify-content:center;
+}
+.mob-nav-scan .ico{font-size:26px}
+.mob-badge{
+  position:absolute;top:6px;right:14px;
+  background:var(--red);color:#fff;
+  font-size:9px;font-weight:800;
+  width:16px;height:16px;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+}
+
+/* Sidebar drawer on mobile */
+.sb-drawer-ovl{display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:250;backdrop-filter:blur(2px)}
+
+/* Mobile EPI card (replaces table rows) */
+.epi-cards{display:none;flex-direction:column;gap:10px;padding:12px;overflow-y:auto;flex:1}
+.epi-card{
+  background:var(--s1);border:1px solid var(--border);border-radius:8px;
+  padding:14px 16px;cursor:pointer;transition:all .15s;
+  display:flex;flex-direction:column;gap:8px;
+}
+.epi-card:active{background:rgba(14,165,233,.06);border-color:rgba(14,165,233,.3)}
+.epi-card-sel{background:rgba(14,165,233,.06) !important;border-color:rgba(14,165,233,.4) !important;}
+.epi-card-top{display:flex;align-items:flex-start;justify-content:space-between;gap:8px}
+.epi-card-name{font-weight:700;font-size:15px;line-height:1.2}
+.epi-card-type{font-family:var(--cond);font-size:11px;color:var(--muted);margin-top:2px}
+.epi-card-badges{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+.epi-card-bottom{display:flex;align-items:center;justify-content:space-between}
+.epi-card-tech{display:flex;align-items:center;gap:5px;font-size:12px;color:var(--muted)}
+.epi-card-date{font-family:var(--cond);font-size:11px}
+
+@media(max-width:768px){
+  /* Header simplifié */
+  .hdr-pills{display:none}
+  .logo span:last-child{display:none}
+  header{padding:0 14px}
+
+  /* Masquer NFC bar et scan button desktop */
+  .nfc-bar{display:none}
+
+  /* Masquer sidebar desktop */
+  .sidebar{
+    position:fixed;left:0;top:0;bottom:0;z-index:260;
+    transform:translateX(-100%);transition:transform .3s ease;
+    width:280px;
+  }
+  .sidebar.mob-open{transform:translateX(0)}
+  .sb-drawer-ovl{display:block}
+
+  /* Layout vertical */
+  .main{flex-direction:column}
+  .content{flex:1;overflow:hidden;display:flex;flex-direction:column}
+
+  /* Toolbar simplifié */
+  .toolbar{padding:8px 12px;gap:6px}
+  .toolbar .btn-ghost.btn-sm:not(#mobileFilterBtn){display:none}
+
+  /* Masquer table, afficher cards */
+  .table-container{display:none}
+  .epi-cards{display:flex}
+
+  /* Detail panel plein écran */
+  .detail{
+    position:fixed;inset:0;z-index:280;
+    width:100%;transform:translateY(100%);
+    transition:transform .3s ease;bottom:64px;
+  }
+  .detail.open{transform:translateY(0)}
+
+  /* Nav bottom visible */
+  .mob-nav{display:grid}
+
+  /* Padding bas pour la nav */
+  .content{padding-bottom:0}
+
+  /* Masquer bouton scan desktop */
+  #scanBtn{display:none !important}
+
+  /* Modals full width */
+  .modal{width:100%;max-width:100%;margin:0;border-radius:16px 16px 0 0;max-height:90vh;position:fixed;bottom:0;left:0;right:0}
+  .overlay{align-items:flex-end}
+
+  /* Formulaires en 1 col */
+  .fgrid{grid-template-columns:1fr}
+  .fgrid .fg.full{grid-column:1}
+
+  /* Boutons plus grands pour tactile */
+  .btn{padding:12px 18px;font-size:14px}
+  .btn-sm{padding:10px 14px;font-size:13px}
+  .fg input,.fg select,.fg textarea{padding:12px 14px;font-size:15px}
+}
+
+@media(min-width:769px){
+  .mob-nav{display:none}
+  .epi-cards{display:none}
+  .sb-drawer-ovl{display:none !important}
+  #mobileFilterBtn{display:none}
+}
+
+</style>
+</head>
+<body>
+
+<!-- ═══════ LOGIN ═══════ -->
+<div id="loginScreen">
+  <div class="login-box">
+    <div class="login-logo">
+      <div class="login-turbine">⚙</div>
+      <h1>WIND<em>GUARD</em> EPI</h1>
+      <p>Registre des équipements de protection — Éolien</p>
+    </div>
+    <div class="role-cards">
+      <div class="role-card sel-admin" id="card-admin" onclick="selRole('admin')"><div class="rc-icon">🛡️</div><div class="rc-title">Administrateur</div><div class="rc-desc">Création, modification, contrôles</div></div>
+      <div class="role-card" id="card-visitor" onclick="selRole('visitor')"><div class="rc-icon">👁️</div><div class="rc-title">Visiteur</div><div class="rc-desc">Consultation uniquement</div></div>
+    </div>
+    <div class="lf"><label>Identifiant</label><input type="text" id="liUser" placeholder="Votre identifiant" onkeydown="if(event.key==='Enter')doLogin()"/></div>
+    <div class="lf"><label>Mot de passe</label><input type="password" id="liPass" placeholder="••••••••" onkeydown="if(event.key==='Enter')doLogin()"/></div>
+    <button class="btn-login btn-login-admin" id="liBtn" onclick="doLogin()">Connexion Administrateur</button>
+    <div class="login-err" id="liErr"></div>
+    <div class="login-hint"><strong>Comptes par défaut</strong>Admin : <code>admin</code> / <code>admin1234</code><br>Visiteur : <code>visiteur</code> / <code>visiteur1234</code></div>
+  </div>
+</div>
+
+<!-- ═══════ APP ═══════ -->
+<div id="appWrap">
+<header>
+  <div class="logo"><span class="logo-turbine">⚙</span>WIND<em>GUARD</em><span style="font-size:14px;color:var(--muted);font-weight:400;letter-spacing:.03em">· EPI Éolien</span></div>
+  <div class="hdr-right">
+    <div class="hdr-pills" id="hdrPills"></div>
+    <div class="user-badge" onclick="toggleMenu()">
+      <div class="u-av" id="uAv"></div>
+      <span id="uName"></span>
+      <span class="role-tag" id="uRole"></span>
+      <span style="color:var(--muted);font-size:11px">▾</span>
+    </div>
+  </div>
+</header>
+<div class="ro-banner" id="roBanner" style="display:none">👁️ Mode lecture seule — Connecté en tant que Visiteur. Modifications réservées aux administrateurs.</div>
+<div class="nfc-bar">
+  <div class="nfc-ring" id="nfcRing">📡</div>
+  <input class="nfc-input" id="nfcIn" placeholder="Saisir ID EPI ou utiliser le bouton Scanner…" autocomplete="off" spellcheck="false"/>
+  <span class="nfc-label" id="nfcLbl">En attente</span>
+  <button id="scanBtn" onclick="openScanModal()" style="display:flex;align-items:center;gap:6px;background:var(--blue);color:#07090d;font-family:var(--cond);font-size:13px;font-weight:800;letter-spacing:.04em;border:none;border-radius:4px;padding:8px 16px;cursor:pointer;white-space:nowrap;flex-shrink:0" onmouseover="this.style.filter='brightness(1.15)'" onmouseout="this.style.filter=''">
+    📱 Scanner
+  </button>
+</div>
+
+<!-- SCAN MODAL -->
+<div class="overlay" id="scanModal" style="z-index:500">
+  <div style="background:var(--s1);border:1px solid var(--border);border-radius:12px;padding:32px;width:360px;max-width:94vw;text-align:center;animation:slideUp .2s ease;position:relative">
+    <button onclick="closeScanModal()" style="position:absolute;top:14px;right:16px;background:none;border:none;color:var(--muted);font-size:20px;cursor:pointer">✕</button>
+
+    <div id="scanReady">
+      <div style="width:100px;height:100px;border-radius:50%;border:3px solid var(--blue);display:flex;align-items:center;justify-content:center;font-size:44px;margin:0 auto 20px;position:relative;animation:ring 2s ease-in-out infinite">
+        📡
+        <div style="position:absolute;inset:-10px;border-radius:50%;border:2px solid var(--blue);opacity:.25;animation:ringOut 2s ease-in-out infinite"></div>
+      </div>
+      <div style="font-family:var(--cond);font-size:20px;font-weight:800;margin-bottom:8px">Approchez le tag NFC</div>
+      <div style="font-size:13px;color:var(--muted);margin-bottom:24px">Tenez le téléphone contre la pastille NFC de l'EPI</div>
+      <div style="font-size:11px;color:var(--muted);margin-bottom:20px;padding:10px;background:var(--s2);border-radius:6px;border:1px solid var(--border)">
+        💡 Si le scan ne se déclenche pas, saisissez l'ID manuellement ci-dessous
+      </div>
+      <div style="display:flex;gap:8px">
+        <input type="text" id="manualNfc" placeholder="ex: NFC-A1B2C3" style="flex:1;background:var(--s2);border:1px solid var(--border);border-radius:4px;padding:10px 12px;color:var(--text);font-family:var(--cond);font-size:14px;letter-spacing:.04em;outline:none" onkeydown="if(event.key==='Enter')manualLookup()"/>
+        <button onclick="manualLookup()" style="background:var(--blue);color:#07090d;font-family:var(--cond);font-size:13px;font-weight:800;border:none;border-radius:4px;padding:10px 14px;cursor:pointer">OK</button>
+      </div>
+    </div>
+
+    <div id="scanFound" style="display:none">
+      <div style="font-size:56px;margin-bottom:12px">✅</div>
+      <div style="font-family:var(--cond);font-size:18px;font-weight:800;color:var(--green);margin-bottom:6px">EPI trouvé !</div>
+      <div style="font-size:14px;color:var(--muted)" id="scanFoundName"></div>
+    </div>
+
+    <div id="scanUnknown" style="display:none">
+      <div style="font-size:56px;margin-bottom:12px">🆕</div>
+      <div style="font-family:var(--cond);font-size:18px;font-weight:800;color:var(--yellow);margin-bottom:6px">Tag non reconnu</div>
+      <div style="font-size:13px;color:var(--muted);margin-bottom:20px" id="scanUnknownId"></div>
+      <div style="display:flex;gap:8px;justify-content:center">
+        <button onclick="closeScanModal()" style="background:var(--s2);color:var(--text);border:1px solid var(--border);font-family:var(--cond);font-size:13px;font-weight:700;padding:8px 16px;border-radius:4px;cursor:pointer">Annuler</button>
+        <button id="btnCreateScan" onclick="createFromScan()" style="background:var(--blue);color:#07090d;font-family:var(--cond);font-size:13px;font-weight:800;border:none;border-radius:4px;padding:8px 16px;cursor:pointer">+ Créer cet EPI</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- SIDEBAR DRAWER OVERLAY (mobile) -->
+<div class="sb-drawer-ovl" id="sbOvl" onclick="closeSidebar()" style="display:none"></div>
+
+<div class="main">
+
+  <!-- SIDEBAR TECHNICIENS -->
+  <div class="sidebar" id="sidebar">
+    <div class="sb-header">
+      <span class="sb-title">Techniciens</span>
+      <button class="btn-add-tech admin-only" onclick="openAddTech()" title="Ajouter un technicien">+ Tech</button>
+    </div>
+
+    <div class="tech-all active" id="techAll" onclick="selTech(null)">
+      <span>👥 Tous</span>
+      <span class="tc" id="tcAll">0</span>
+    </div>
+
+    <div id="techList"></div>
+
+    <div class="sb-bottom">
+      <button class="btn btn-blue admin-only" style="justify-content:center" onclick="openAdd()">+ Ajouter EPI</button>
+      <button class="btn btn-ghost admin-only" style="justify-content:center" onclick="openUsersModal()">🔐 Comptes</button>
+      <button class="btn btn-ghost" style="justify-content:center" onclick="exportCSV()">↓ CSV</button>
+      <button class="btn btn-ghost" style="justify-content:center;color:var(--red);border-color:rgba(239,68,68,.3)" onclick="logout()">⏏ Déconnexion</button>
+    </div>
+  </div>
+
+  <!-- CONTENT -->
+  <div class="content">
+    <div class="toolbar">
+      <div class="search-wrap"><span style="color:var(--muted)">🔍</span><input id="searchIn" placeholder="Rechercher NFC, désignation, marque, S/N, technicien…" oninput="render()"/></div>
+      <select id="filterEtat" class="btn btn-ghost btn-sm" onchange="render()" style="cursor:pointer">
+        <option value="">Tous états</option><option>Neuf</option><option>Très bon</option><option>Bon</option><option>À surveiller</option><option>Mis en service</option>
+      </select>
+      <select id="filterOkNok" class="btn btn-ghost btn-sm" onchange="render()" style="cursor:pointer">
+        <option value="">OK / NOK</option><option value="OK">✓ OK</option><option value="NOK">✗ NOK</option>
+      </select>
+      <button class="btn btn-ghost btn-sm admin-only" onclick="openCtrl()">✓ Contrôle</button>
+    </div>
+    <div class="table-container">
+      <table>
+        <thead><tr>
+          <th onclick="srt('nfcId')">Tag NFC</th>
+          <th onclick="srt('type')">Catégorie</th>
+          <th onclick="srt('nom')">Désignation</th>
+          <th onclick="srt('marque')">Marque / Modèle</th>
+          <th onclick="srt('serie')">S/N</th>
+          <th>Techniciens assignés</th>
+          <th onclick="srt('etat')">État</th>
+          <th onclick="srt('okNok')">OK/NOK</th>
+          <th onclick="srt('noteSvc')">Note service</th>
+          <th onclick="srt('dateFab')">Fabrication</th>
+          <th onclick="srt('dateMse')">Mise en service</th>
+          <th onclick="srt('dateCtrl')">Dernier ctrl</th>
+          <th onclick="srt('dateProchain')">Prochain ctrl</th>
+          <th class="admin-only" id="th-act">Actions</th>
+        </tr></thead>
+        <tbody id="tbody"></tbody>
+      </table>
+    </div>
+    <!-- MOBILE EPI CARDS -->
+    <div class="epi-cards" id="epiCards"></div>
+  </div>
+
+  <!-- DETAIL PANEL -->
+  <div class="detail" id="detailPanel">
+    <div class="detail-hdr">
+      <div>
+        <div id="dp-nfc" style="font-family:var(--cond);font-size:12px;color:var(--blue);margin-bottom:4px"></div>
+        <div id="dp-nom" style="font-size:18px;font-weight:700;font-family:var(--cond)"></div>
+        <div id="dp-type" style="font-size:12px;color:var(--muted);margin-top:2px"></div>
+      </div>
+      <button class="modal-close" onclick="closeDetail()">✕</button>
+    </div>
+    <div class="detail-body">
+      <div class="d-section"><div class="d-stitle">Identification</div><div id="dp-info"></div></div>
+      <div class="d-section"><div class="d-stitle">Techniciens assignés</div><div id="dp-assignees" class="assignee-list"></div></div>
+      <div class="d-section"><div class="d-stitle">Dates &amp; Contrôles</div><div id="dp-dates"></div></div>
+      <div class="d-section">
+        <div class="d-stitle">Photos de vérification</div>
+        <div class="photo-zone" id="photoZone" onclick="triggerPhoto()">
+          <div style="font-size:28px;margin-bottom:6px">📸</div>
+          <div style="font-size:13px;color:var(--muted)" id="photoZoneLbl">Cliquer pour ajouter des photos</div>
+        </div>
+        <input type="file" id="photoUpload" class="photo-input" accept="image/*" multiple onchange="addPhotos(event)"/>
+        <div class="photo-grid" id="photoGrid"></div>
+      </div>
+      <div class="d-section"><div class="d-stitle">Historique des contrôles</div><div id="dp-history"></div></div>
+      <div id="detailActions" style="display:flex;gap:8px"></div>
+    </div>
+  </div>
+</div>
+</div><!-- /appWrap -->
+
+<!-- BOTTOM NAV (mobile) -->
+<div class="mob-nav" id="mobNav">
+  <button class="mob-nav-btn" id="mbn-techs" onclick="mobNav('techs')">
+    <span class="ico">👥</span>Techniciens
+  </button>
+  <button class="mob-nav-btn" id="mbn-list" onclick="mobNav('list')">
+    <span class="ico">📋</span>EPI
+  </button>
+  <button class="mob-nav-scan mob-nav-btn" onclick="openScanModal()">
+    <span class="ico">📡</span>Scanner
+  </button>
+  <button class="mob-nav-btn" id="mbn-user" onclick="toggleMenu()">
+    <span class="ico" id="mobUserIco">👤</span>Compte
+  </button>
+</div>
+
+<!-- ADD/EDIT EPI MODAL -->
+<div class="overlay" id="addModal">
+  <div class="modal">
+    <div class="modal-title"><span id="modalTitle">Ajouter un EPI</span><button class="modal-close" onclick="closeAdd()">✕</button></div>
+    <div class="fgrid">
+      <div class="fg full"><label>Tag NFC / Identifiant</label><div class="nfc-wrap"><input type="text" id="f-nfcId" placeholder="ex: NFC-A1B2C3D4"/><button class="btn-gen" onclick="genNfc()">⟳ Générer</button></div></div>
+      <div class="fg"><label>Catégorie EPI</label>
+        <select id="f-type"><option value="">Sélectionner…</option><option>Protection tête</option><option>Protection yeux/visage</option><option>Protection ouïe</option><option>Protection respiratoire</option><option>Protection mains</option><option>Protection pieds</option><option>Anti-chute / Harnais</option><option>Vêtement haute visibilité</option><option>Longe / Corde</option><option>Autre</option></select>
+      </div>
+      <div class="fg"><label>Désignation</label><input type="text" id="f-nom" placeholder="ex: Harnais anti-chute"/></div>
+      <div class="fg"><label>Marque</label><input type="text" id="f-marque" placeholder="ex: Petzl, 3M, MSA…"/></div>
+      <div class="fg"><label>Modèle</label><input type="text" id="f-modele" placeholder="ex: Avao Bod Fast"/></div>
+      <div class="fg"><label>Numéro de série (S/N)</label><input type="text" id="f-serie" placeholder="ex: SN-2024-0042"/></div>
+
+      <!-- MULTI-ASSIGN TECHNICIENS -->
+      <div class="fg full">
+        <label>Techniciens assignés <span style="color:var(--muted);font-weight:400;text-transform:none;letter-spacing:0">(sélection multiple possible)</span></label>
+        <div class="user-checkboxes" id="techCheckboxes"></div>
+      </div>
+
+      <div class="fg full"><label>Note de service</label><input type="text" id="f-noteSvc" placeholder="ex: Tour T-07, nacelle"/></div>
+      <div class="fg"><label>État</label><select id="f-etat"><option>Neuf</option><option>Très bon</option><option selected>Bon</option><option>À surveiller</option><option>Mis en service</option></select></div>
+      <div class="fg"><label>Statut OK / NOK</label><select id="f-okNok"><option value="OK">✓ OK — Conforme</option><option value="NOK">✗ NOK — Non conforme</option></select></div>
+      <div class="fg"><label>Norme / Certification</label><input type="text" id="f-norme" placeholder="ex: EN 361, CE cat. III"/></div>
+      <div class="fg"><label>Date de fabrication</label><input type="date" id="f-dateFab"/></div>
+      <div class="fg"><label>Date de mise en service</label><input type="date" id="f-dateMse"/></div>
+      <div class="fg"><label>Date du dernier contrôle</label><input type="date" id="f-dateCtrl"/></div>
+      <div class="fg"><label>Date du prochain contrôle</label><input type="date" id="f-dateProchain"/></div>
+      <div class="fg full"><label>Observations / Remarques</label><textarea id="f-notes" placeholder="Détails sur l'état, anomalies, localisation éolienne…"></textarea></div>
+    </div>
+    <div class="modal-foot"><button class="btn btn-ghost" onclick="closeAdd()">Annuler</button><button class="btn btn-blue" onclick="saveEPI()">Enregistrer</button></div>
+  </div>
+</div>
+
+<!-- ADD TECHNICIAN MODAL -->
+<div class="overlay" id="techModal">
+  <div class="modal" style="width:420px">
+    <div class="modal-title"><span id="techModalTitle">Ajouter un technicien</span><button class="modal-close" onclick="closeTechModal()">✕</button></div>
+    <div class="fg"><label>Nom complet</label><input type="text" id="t-nom" placeholder="ex: Lucas Bernard"/></div>
+    <div class="fg"><label>Poste / Fonction</label><input type="text" id="t-poste" placeholder="ex: Technicien éolien senior"/></div>
+    <div class="fg"><label>Couleur d'identification</label>
+      <div class="tech-color-grid" id="colorGrid"></div>
+    </div>
+    <div class="modal-foot"><button class="btn btn-ghost" onclick="closeTechModal()">Annuler</button><button class="btn btn-blue" onclick="saveTech()">Enregistrer</button></div>
+  </div>
+</div>
+
+<!-- CTRL MODAL -->
+<div class="overlay" id="ctrlModal">
+  <div class="modal" style="width:480px">
+    <div class="modal-title"><span>Enregistrer un contrôle</span><button class="modal-close" onclick="closeCtrl()">✕</button></div>
+    <div class="fg"><label>EPI</label><select id="c-epiId"><option value="">Sélectionner un EPI…</option></select></div>
+    <div class="fgrid">
+      <div class="fg"><label>Date du contrôle</label><input type="date" id="c-date"/></div>
+      <div class="fg"><label>Contrôleur</label><input type="text" id="c-ctrl" placeholder="Nom"/></div>
+      <div class="fg"><label>Résultat</label><select id="c-oknok"><option value="OK">✓ OK</option><option value="NOK">✗ NOK</option></select></div>
+      <div class="fg"><label>État observé</label><select id="c-etat"><option>Neuf</option><option>Très bon</option><option selected>Bon</option><option>À surveiller</option><option>Mis en service</option></select></div>
+      <div class="fg"><label>Prochain contrôle dans</label><select id="c-period"><option value="30">1 mois</option><option value="90">3 mois</option><option value="180">6 mois</option><option value="365" selected>1 an</option></select></div>
+      <div class="fg full"><label>Observations</label><textarea id="c-notes" placeholder="Anomalies, recommandations…"></textarea></div>
+    </div>
+    <div class="modal-foot"><button class="btn btn-ghost" onclick="closeCtrl()">Annuler</button><button class="btn btn-blue" onclick="saveCtrl()">Enregistrer</button></div>
+  </div>
+</div>
+
+<!-- USERS (comptes) MODAL -->
+<div class="overlay" id="usersModal">
+  <div class="modal" style="width:560px">
+    <div class="modal-title"><span>🔐 Gestion des comptes</span><button class="modal-close" onclick="closeUsersModal()">✕</button></div>
+    <div style="background:var(--s2);border:1px solid var(--border);border-radius:6px;padding:20px;margin-bottom:20px">
+      <div style="font-family:var(--cond);font-size:12px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:14px">Ajouter un compte</div>
+      <div class="fgrid">
+        <div class="fg"><label>Identifiant</label><input type="text" id="nu-login" placeholder="ex: tech1"/></div>
+        <div class="fg"><label>Mot de passe</label><input type="password" id="nu-pass" placeholder="••••••••"/></div>
+        <div class="fg"><label>Nom complet</label><input type="text" id="nu-nom" placeholder="ex: Jean Martin"/></div>
+        <div class="fg"><label>Rôle</label><select id="nu-role"><option value="admin">🛡️ Administrateur</option><option value="visitor" selected>👁️ Visiteur</option></select></div>
+      </div>
+      <div style="display:flex;justify-content:flex-end"><button class="btn btn-blue btn-sm" onclick="addAppUser()">+ Créer</button></div>
+    </div>
+    <div style="font-family:var(--cond);font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.1em;margin-bottom:10px">Comptes existants</div>
+    <table class="users-table" id="usersTable"></table>
+    <div class="modal-foot"><button class="btn btn-ghost" onclick="closeUsersModal()">Fermer</button></div>
+  </div>
+</div>
+
+<!-- LIGHTBOX -->
+<div class="overlay" id="lightbox" onclick="closeLightbox()"><img id="lbImg" style="max-width:90vw;max-height:90vh;border-radius:6px;object-fit:contain"/></div>
+
+<!-- USER MENU -->
+<div class="user-menu" id="userMenu">
+  <div style="padding:10px 12px;border-bottom:1px solid var(--border);margin-bottom:4px">
+    <div style="font-family:var(--cond);font-size:14px;font-weight:700" id="menuName"></div>
+    <div style="font-size:12px;color:var(--muted)" id="menuRoleLabel"></div>
+  </div>
+  <div id="menuItems"></div>
+  <button class="menu-item danger" onclick="logout()">⏏ Déconnexion</button>
+</div>
+<div id="menuOvl" style="display:none;position:fixed;inset:0;z-index:199" onclick="closeMenu()"></div>
+<div id="toasts"></div>
+
+<script>
+// ═══════════════════════════════════════════
+// AUTH & APP USERS
+// ═══════════════════════════════════════════
+let appUsers = JSON.parse(localStorage.getItem('wg_appusers')||'null');
+if(!appUsers){
+  appUsers=[
+    {id:'au1',login:'admin',   pass:'admin1234',   nom:'Administrateur',role:'admin'},
+    {id:'au2',login:'visiteur',pass:'visiteur1234',nom:'Visiteur',      role:'visitor'},
+  ];
+  localStorage.setItem('wg_appusers',JSON.stringify(appUsers));
+}
+let currentUser=null, selRoleVal='admin';
+
+function selRole(r){
+  selRoleVal=r;
+  document.getElementById('card-admin').className  ='role-card'+(r==='admin'?' sel-admin':'');
+  document.getElementById('card-visitor').className='role-card'+(r==='visitor'?' sel-visitor':'');
+  const btn=document.getElementById('liBtn');
+  btn.className='btn-login btn-login-'+(r==='admin'?'admin':'visitor');
+  btn.textContent='Connexion '+(r==='admin'?'Administrateur':'Visiteur');
+}
+function doLogin(){
+  const login=document.getElementById('liUser').value.trim();
+  const pass =document.getElementById('liPass').value;
+  const errEl=document.getElementById('liErr');
+  const u=appUsers.find(x=>x.login===login&&x.pass===pass&&x.role===selRoleVal);
+  if(!u){
+    const exists=appUsers.find(x=>x.login===login);
+    const pwOk=exists&&exists.pass===pass;
+    errEl.textContent=!exists?'Identifiant inconnu.':!pwOk?'Mot de passe incorrect.':`Ce compte n'est pas "${selRoleVal==='admin'?'Admin':'Visiteur'}".`;
+    errEl.style.display='block'; return;
+  }
+  errEl.style.display='none';
+  currentUser=u; startApp();
+}
+function startApp(){
+  document.getElementById('loginScreen').style.display='none';
+  document.getElementById('appWrap').style.display='flex';
+  const admin=isAdmin();
+  const av=document.getElementById('uAv');
+  av.textContent=admin?'🛡️':'👁️'; av.className='u-av '+(admin?'av-admin':'av-visitor');
+  document.getElementById('uName').textContent=currentUser.nom;
+  const rt=document.getElementById('uRole'); rt.textContent=admin?'ADMIN':'VISITEUR';
+  rt.className='role-tag '+(admin?'role-admin':'role-visitor');
+  document.getElementById('roBanner').style.display=admin?'none':'flex';
+  document.querySelectorAll('.admin-only').forEach(el=>el.style.display=admin?'':'none');
+  const tact=document.getElementById('th-act'); if(tact) tact.style.display=admin?'':'none';
+  renderSidebar(); render();
+}
+function logout(){
+  closeMenu(); currentUser=null;
+  document.getElementById('appWrap').style.display='none';
+  document.getElementById('loginScreen').style.display='flex';
+  document.getElementById('liUser').value=''; document.getElementById('liPass').value='';
+  detailId=null; document.getElementById('detailPanel').classList.remove('open');
+}
+const isAdmin=()=>currentUser?.role==='admin';
+
+function toggleMenu(){
+  const m=document.getElementById('userMenu');
+  if(m.style.display==='block'){closeMenu();return;}
+  document.getElementById('menuName').textContent=currentUser.nom;
+  document.getElementById('menuRoleLabel').textContent=currentUser.role==='admin'?'🛡️ Administrateur':'👁️ Visiteur';
+  document.getElementById('menuItems').innerHTML=isAdmin()
+    ?`<button class="menu-item" onclick="openUsersModal();closeMenu()">🔐 Gérer les comptes</button>
+      <button class="menu-item" onclick="exportCSV();closeMenu()">↓ Exporter CSV</button>`
+    :`<button class="menu-item" onclick="exportCSV();closeMenu()">↓ Exporter CSV</button>`;
+  m.style.display='block'; document.getElementById('menuOvl').style.display='block';
+}
+function closeMenu(){document.getElementById('userMenu').style.display='none';document.getElementById('menuOvl').style.display='none';}
+
+function openUsersModal(){renderUsersTable();document.getElementById('usersModal').classList.add('open');}
+function closeUsersModal(){document.getElementById('usersModal').classList.remove('open');}
+function renderUsersTable(){
+  document.getElementById('usersTable').innerHTML=
+    `<tr><th>Identifiant</th><th>Nom</th><th>Rôle</th><th></th></tr>`+
+    appUsers.map(u=>`<tr>
+      <td style="font-family:var(--cond)">${u.login}</td><td>${u.nom}</td>
+      <td><span class="role-tag ${u.role==='admin'?'role-admin':'role-visitor'}">${u.role==='admin'?'ADMIN':'VISITEUR'}</span></td>
+      <td>${u.id===currentUser.id?'<span style="font-size:11px;color:var(--muted)">(vous)</span>'
+        :`<button onclick="delAppUser('${u.id}')" style="background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.3);color:var(--red);font-family:var(--cond);font-size:11px;font-weight:700;padding:4px 10px;border-radius:3px;cursor:pointer">✗ Suppr.</button>`}
+      </td></tr>`).join('');
+}
+function addAppUser(){
+  const login=document.getElementById('nu-login').value.trim();
+  const pass =document.getElementById('nu-pass').value.trim();
+  const nom  =document.getElementById('nu-nom').value.trim();
+  const role =document.getElementById('nu-role').value;
+  if(!login||!pass||!nom){toast('Tous les champs requis','warn');return;}
+  if(appUsers.find(u=>u.login===login)){toast('Identifiant déjà utilisé','warn');return;}
+  appUsers.push({id:'au'+Date.now(),login,pass,nom,role});
+  localStorage.setItem('wg_appusers',JSON.stringify(appUsers));
+  ['nu-login','nu-pass','nu-nom'].forEach(id=>document.getElementById(id).value='');
+  renderUsersTable(); toast(`Compte "${nom}" créé`,'ok');
+}
+function delAppUser(id){
+  const u=appUsers.find(x=>x.id===id);
+  if(!confirm(`Supprimer le compte "${u?.nom}" ?`))return;
+  appUsers=appUsers.filter(x=>x.id!==id);
+  localStorage.setItem('wg_appusers',JSON.stringify(appUsers));
+  renderUsersTable(); toast('Compte supprimé','warn');
+}
+
+// ═══════════════════════════════════════════
+// DATA — TECHNICIENS (séparés des comptes app)
+// ═══════════════════════════════════════════
+const PALETTE=['#0ea5e9','#10b981','#f59e0b','#ef4444','#a855f7','#f97316','#06b6d4','#ec4899','#84cc16','#6366f1','#14b8a6','#fb923c'];
+let techs  = JSON.parse(localStorage.getItem('wg_techs') ||'null');
+let epis   = JSON.parse(localStorage.getItem('wg_epis')  ||'[]');
+let ctrls  = JSON.parse(localStorage.getItem('wg_ctrls') ||'[]');
+let photos = JSON.parse(localStorage.getItem('wg_photos')||'{}');
+
+if(!techs){
+  techs=[
+    {id:'t1',nom:'Lucas Bernard', poste:'Tech. éolien senior',  color:'#0ea5e9'},
+    {id:'t2',nom:'Sara Petit',    poste:'Tech. éolien',         color:'#10b981'},
+    {id:'t3',nom:'Marc Lefèvre',  poste:'Chef d\'équipe',       color:'#f59e0b'},
+    {id:'t4',nom:'Julie Morin',   poste:'Tech. maintenance',    color:'#a855f7'},
+  ];
+  localStorage.setItem('wg_techs',JSON.stringify(techs));
+}
+
+if(!epis.length){
+  const ad=n=>{const d=new Date();d.setDate(d.getDate()+n);return d.toISOString().slice(0,10);};
+  epis=[
+    {id:'e1',nfcId:'NFC-F3A9D1',type:'Anti-chute / Harnais',nom:'Harnais anti-chute',marque:'Petzl',modele:'Avao Bod Fast',serie:'SN-2023-042',techIds:['t1'],noteSvc:'Tour T-07 nacelle',etat:'Bon',okNok:'OK',norme:'EN 361 Cat.III',dateFab:'2022-08-01',dateMse:'2023-01-15',dateCtrl:ad(-30),dateProchain:ad(335),notes:''},
+    {id:'e2',nfcId:'NFC-C7B2E8',type:'Protection tête',nom:'Casque sécurité',marque:'MSA',modele:'V-Gard 500',serie:'SN-2023-007',techIds:['t2'],noteSvc:'Tour T-12',etat:'Très bon',okNok:'OK',norme:'EN 397',dateFab:'2023-02-10',dateMse:'2023-03-01',dateCtrl:ad(-90),dateProchain:ad(10),notes:''},
+    {id:'e3',nfcId:'NFC-A4K1M9',type:'Longe / Corde',nom:'Longe double absorbeur',marque:'Singing Rock',modele:'Rider Double',serie:'SN-2022-091',techIds:['t3'],noteSvc:'Maintenance rotor',etat:'À surveiller',okNok:'NOK',norme:'EN 354/355',dateFab:'2021-05-20',dateMse:'2021-07-01',dateCtrl:ad(-5),dateProchain:ad(-1),notes:'Usure couture supérieure'},
+    {id:'e4',nfcId:'NFC-P8R2S5',type:'Protection respiratoire',nom:'Demi-masque 3M',marque:'3M',modele:'6502 Confort',serie:'SN-2024-003',techIds:['t4'],noteSvc:'Espace confiné nacelle',etat:'Neuf',okNok:'OK',norme:'EN 140',dateFab:'2024-01-05',dateMse:'2024-02-01',dateCtrl:ad(-10),dateProchain:ad(355),notes:''},
+    {id:'e5',nfcId:'NFC-Q2T7V3',type:'Vêtement haute visibilité',nom:'Veste HV classe 3',marque:'Portwest',modele:'S476',serie:'SN-2023-155',techIds:['t1','t3'],noteSvc:'Accès terrain parc',etat:'Bon',okNok:'OK',norme:'EN ISO 20471 Cl.3',dateFab:'2023-06-01',dateMse:'2023-06-15',dateCtrl:ad(-180),dateProchain:ad(185),notes:'Partagé T1 & T3'},
+    {id:'e6',nfcId:'NFC-R5S8T2',type:'Anti-chute / Harnais',nom:'Harnais nacelle',marque:'Petzl',modele:'Vertex Vent',serie:'SN-2023-099',techIds:['t1','t2','t4'],noteSvc:'Partage équipe A',etat:'Très bon',okNok:'OK',norme:'EN 397/361',dateFab:'2023-04-01',dateMse:'2023-05-01',dateCtrl:ad(-60),dateProchain:ad(305),notes:'EPI partagé 3 techniciens'},
+  ];
+  ctrls=[
+    {id:'c1',epiId:'e1',date:new Date(Date.now()-30*864e5).toISOString().slice(0,10),ctrl:'Chef sécurité',oknok:'OK',etat:'Bon',notes:'RAS'},
+    {id:'c2',epiId:'e3',date:new Date(Date.now()-5*864e5).toISOString().slice(0,10),ctrl:'HSE',oknok:'NOK',etat:'À surveiller',notes:'Couture abîmée'},
+  ];
+}
+const saveAll=()=>{
+  localStorage.setItem('wg_techs', JSON.stringify(techs));
+  localStorage.setItem('wg_epis',  JSON.stringify(epis));
+  localStorage.setItem('wg_ctrls', JSON.stringify(ctrls));
+  localStorage.setItem('wg_photos',JSON.stringify(photos));
+};
+saveAll();
+
+// ═══════════════════════════════════════════
+// UTILS
+// ═══════════════════════════════════════════
+const fmt=d=>{if(!d)return'—';const[y,m,dd]=d.split('-');return`${dd}/${m}/${y}`;};
+const daysTo=d=>{if(!d)return null;const t=new Date();t.setHours(0,0,0,0);const x=new Date(d);x.setHours(0,0,0,0);return Math.round((x-t)/86400000);};
+const dcls=d=>{const n=daysTo(d);return n===null?'':n<0?'date-exp':n<=30?'date-soon':'date-ok';};
+const ECLS={'Neuf':'etat-neuf','Très bon':'etat-tres-bon','Bon':'etat-bon','À surveiller':'etat-surveiller','Mis en service':'etat-mis-service'};
+const etatB=e=>`<span class="etat-badge ${ECLS[e]||'etat-bon'}">${e||'—'}</span>`;
+const oknokB=s=>s==='NOK'?`<span class="ok-badge ok-nok">✗ NOK</span>`:`<span class="ok-badge ok-ok">✓ OK</span>`;
+const daysB=d=>{const n=daysTo(d);if(n===null)return'';if(n<0)return`<span style="font-size:10px;color:var(--red)">(${Math.abs(n)}j dépassé)</span>`;if(n<=30)return`<span style="font-size:10px;color:var(--yellow)">(${n}j)</span>`;return'';};
+const techById=id=>techs.find(t=>t.id===id);
+
+// Generate initials & color for tech avatar
+function techAvHTML(t,size=32,fsize=12){
+  if(!t) return '';
+  const initials=t.nom.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
+  return `<div class="tech-avatar" style="width:${size}px;height:${size}px;font-size:${fsize}px;background:${t.color}22;color:${t.color};border-color:${t.color}55">${initials}</div>`;
+}
+
+// ═══════════════════════════════════════════
+// SIDEBAR RENDER
+// ═══════════════════════════════════════════
+let selTechId=null;
+
+function selTech(id){
+  selTechId=id;
+  document.getElementById('techAll').className='tech-all'+(id===null?' active':'');
+  document.querySelectorAll('.tech-item').forEach(el=>{
+    el.classList.toggle('active', el.dataset.tid===id);
+  });
+  render();
+  // On mobile: close sidebar after selecting a tech
+  if(isMobile()) closeSidebar();
+  // Activate list tab
+  document.getElementById('mbn-list')?.classList.add('active');
+}
+
+function renderSidebar(){
+  const list=document.getElementById('techList');
+  list.innerHTML='';
+  techs.forEach(t=>{
+    const myEpis=epis.filter(e=>(e.techIds||[]).includes(t.id));
+    const nok=myEpis.filter(e=>e.okNok==='NOK').length;
+    const soon=myEpis.filter(e=>{const n=daysTo(e.dateProchain);return n!==null&&n>=0&&n<=30;}).length;
+    const exp=myEpis.filter(e=>{const n=daysTo(e.dateProchain);return n!==null&&n<0;}).length;
+
+    const wrap=document.createElement('div');
+    wrap.className='tech-item'+(selTechId===t.id?' active':'');
+    wrap.dataset.tid=t.id;
+    wrap.onclick=()=>selTech(t.id);
+
+    const initials=t.nom.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
+    const statusDot=nok>0?`<span style="color:var(--red);font-size:10px">✗${nok}</span>`:exp>0?`<span style="color:var(--red);font-size:10px">${exp}exp</span>`:soon>0?`<span style="color:var(--yellow);font-size:10px">⚠${soon}</span>`:'';
+
+    wrap.innerHTML=`
+      <div class="tech-card">
+        <div class="tech-avatar" style="background:${t.color}22;color:${t.color};border-color:${t.color}55">${initials}</div>
+        <div class="tech-info">
+          <div class="tech-name">${t.nom} ${statusDot}</div>
+          <div class="tech-epi-count">${myEpis.length} EPI${myEpis.length>1?'s':''} · ${t.poste||''}</div>
+        </div>
+        ${isAdmin()?`<button onclick="event.stopPropagation();confirmDelTech('${t.id}')" style="background:none;border:none;color:var(--muted);cursor:pointer;font-size:14px;padding:2px 4px;opacity:.5;transition:opacity .15s" onmouseover="this.style.opacity=1;this.style.color='var(--red)'" onmouseout="this.style.opacity=.5;this.style.color='var(--muted)'">✕</button>`:''}
+      </div>
+      <div class="tech-epis-preview">
+        ${myEpis.map(e=>{
+          const n=daysTo(e.dateProchain);
+          const cls=e.okNok==='NOK'?'nok':n!==null&&n<=30?'soon':'';
+          return `<span class="epi-chip ${cls}" onclick="event.stopPropagation();openDetail('${e.id}')" title="${e.nom}">${e.type.split(' ')[0].replace('Protection','').trim()||e.type}</span>`;
+        }).join('')}
+      </div>
+    `;
+    list.appendChild(wrap);
+  });
+  document.getElementById('tcAll').textContent=epis.length;
+}
+
+function confirmDelTech(id){
+  const t=techs.find(x=>x.id===id);
+  const count=epis.filter(e=>(e.techIds||[]).includes(id)).length;
+  if(!confirm(`Supprimer "${t?.nom}" ?\n${count} EPI(s) lui seront désassignés.`))return;
+  techs=techs.filter(x=>x.id!==id);
+  epis.forEach(e=>{e.techIds=(e.techIds||[]).filter(tid=>tid!==id);});
+  if(selTechId===id)selTechId=null;
+  saveAll();renderSidebar();render();toast(`Technicien "${t.nom}" supprimé`,'warn');
+}
+
+// ═══════════════════════════════════════════
+// TABLE RENDER
+// ═══════════════════════════════════════════
+let editId=null, detailId=null, sortK='nom', sortD=1;
+
+function render(){
+  const q=(document.getElementById('searchIn')||{}).value?.toLowerCase()||'';
+  const fe=(document.getElementById('filterEtat')||{}).value||'';
+  const fok=(document.getElementById('filterOkNok')||{}).value||'';
+
+  let rows=epis.filter(e=>{
+    if(selTechId && !(e.techIds||[]).includes(selTechId)) return false;
+    const techNames=(e.techIds||[]).map(id=>techById(id)?.nom||'').join(' ').toLowerCase();
+    const s=[e.nfcId,e.nom,e.type,e.marque,e.modele,e.serie,e.noteSvc,techNames].join(' ').toLowerCase();
+    if(q&&!s.includes(q))return false;
+    if(fe&&e.etat!==fe)return false;
+    if(fok&&e.okNok!==fok)return false;
+    return true;
+  }).sort((a,b)=>{let va=a[sortK]||'',vb=b[sortK]||'';return va<vb?-sortD:va>vb?sortD:0;});
+
+  // header pills
+  const nok=epis.filter(e=>e.okNok==='NOK').length;
+  const soon=epis.filter(e=>{const n=daysTo(e.dateProchain);return n!==null&&n>=0&&n<=30;}).length;
+  const exp=epis.filter(e=>{const n=daysTo(e.dateProchain);return n!==null&&n<0;}).length;
+  const hp=document.getElementById('hdrPills');
+  if(hp)hp.innerHTML=`<div class="pill pill-g">✓ ${epis.length} EPI</div><div class="pill pill-y">⚠ ${soon} bientôt</div><div class="pill pill-r">${exp} exp · ${nok} NOK</div>`;
+
+  const tbody=document.getElementById('tbody');
+  if(!tbody)return;
+  if(!rows.length){tbody.innerHTML=`<tr><td colspan="14"><div class="empty"><div class="ico">🪢</div>Aucun EPI trouvé</div></td></tr>`;return;}
+
+  const admin=isAdmin();
+  // Mobile cards
+  renderMobileCards(rows);
+  updateMobBadge();
+
+  tbody.innerHTML=rows.map(e=>{
+    const assigned=(e.techIds||[]).map(id=>techById(id)).filter(Boolean);
+    const assigneeHTML=assigned.length
+      ?`<div class="assignees">${assigned.map(t=>{
+          const init=t.nom.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
+          return `<div class="mini-av" style="background:${t.color}22;color:${t.color};border-color:${t.color}55" title="${t.nom}">${init}</div>`;
+        }).join('')}
+        ${assigned.length===1?`<span class="assignee-name">${assigned[0].nom}</span>`:
+          `<span class="assignee-name">${assigned.length} techs</span>`}
+      </div>`
+      :'<span style="color:var(--muted);font-size:12px">—</span>';
+
+    return `<tr onclick="openDetail('${e.id}')" ${detailId===e.id?'class="row-sel"':''}>
+      <td><span class="td-code">${e.nfcId||'—'}</span></td>
+      <td style="font-size:11px;color:var(--muted);font-family:var(--cond)">${e.type}</td>
+      <td><div class="td-name">${e.nom}</div><div class="td-sub">${e.modele||''}</div></td>
+      <td style="font-size:12px">${e.marque||'—'}</td>
+      <td style="font-family:var(--cond);font-size:11px;color:var(--muted)">${e.serie||'—'}</td>
+      <td>${assigneeHTML}</td>
+      <td>${etatB(e.etat)}</td>
+      <td>${oknokB(e.okNok)}</td>
+      <td style="font-size:11px;max-width:110px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${e.noteSvc||'—'}</td>
+      <td class="${dcls(e.dateFab)}" style="font-family:var(--cond);font-size:11px">${fmt(e.dateFab)}</td>
+      <td style="font-family:var(--cond);font-size:11px">${fmt(e.dateMse)}</td>
+      <td style="font-family:var(--cond);font-size:11px">${fmt(e.dateCtrl)}</td>
+      <td class="${dcls(e.dateProchain)}" style="font-family:var(--cond);font-size:11px;font-weight:600">${fmt(e.dateProchain)} ${daysB(e.dateProchain)}</td>
+      <td style="display:${admin?'':'none'}" onclick="event.stopPropagation()">
+        <button class="btn btn-ghost btn-sm" style="padding:5px 10px;font-size:11px" onclick="openEdit('${e.id}')">✏</button>
+      </td>
+    </tr>`;
+  }).join('');
+}
+function srt(k){sortD=sortK===k?-sortD:1;sortK=k;render();}
+
+// ═══════════════════════════════════════════
+// DETAIL PANEL
+// ═══════════════════════════════════════════
+function openDetail(id){
+  detailId=id;const e=epis.find(x=>x.id===id);if(!e)return;
+  document.getElementById('dp-nfc').textContent=e.nfcId||'';
+  document.getElementById('dp-nom').textContent=e.nom||'';
+  document.getElementById('dp-type').textContent=e.type||'';
+
+  document.getElementById('dp-info').innerHTML=[
+    ['Marque',e.marque],['Modèle',e.modele],['N° Série',e.serie],
+    ['Norme',e.norme],['Note de service',e.noteSvc],
+    ['État',etatB(e.etat)],['Statut',oknokB(e.okNok)],['Observations',e.notes||'—'],
+  ].map(([k,v])=>`<div class="d-row"><span class="d-key">${k}</span><span class="d-val">${v||'—'}</span></div>`).join('');
+
+  // Assigned technicians
+  const assigned=(e.techIds||[]).map(id=>techById(id)).filter(Boolean);
+  document.getElementById('dp-assignees').innerHTML=assigned.length
+    ?assigned.map(t=>{
+        const init=t.nom.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
+        return `<div class="assignee-chip">
+          <div class="mini-av" style="width:24px;height:24px;font-size:9px;background:${t.color}22;color:${t.color};border-color:${t.color}55">${init}</div>
+          <div>
+            <div style="font-weight:600;font-size:13px">${t.nom}</div>
+            <div style="font-size:11px;color:var(--muted)">${t.poste||''}</div>
+          </div>
+        </div>`;
+      }).join('')
+    :'<span style="color:var(--muted);font-size:13px">Aucun technicien assigné</span>';
+
+  document.getElementById('dp-dates').innerHTML=[
+    ['Fabrication',fmt(e.dateFab),dcls(e.dateFab)],
+    ['Mise en service',fmt(e.dateMse),''],
+    ['Dernier contrôle',fmt(e.dateCtrl),''],
+    ['Prochain contrôle',fmt(e.dateProchain)+' '+daysB(e.dateProchain),dcls(e.dateProchain)],
+  ].map(([k,v,c])=>`<div class="d-row"><span class="d-key">${k}</span><span class="d-val ${c}">${v}</span></div>`).join('');
+
+  const ph=photos[id]||[];
+  document.getElementById('photoGrid').innerHTML=ph.map((src,i)=>`<img class="photo-thumb" src="${src}" onclick="openLightbox('${id}',${i})"/>`).join('');
+  const pz=document.getElementById('photoZone'),lbl=document.getElementById('photoZoneLbl');
+  if(isAdmin()){pz.className='photo-zone';pz.onclick=()=>document.getElementById('photoUpload').click();lbl.textContent='Cliquer pour ajouter des photos';}
+  else{pz.className='photo-zone ro';pz.onclick=null;lbl.textContent=ph.length?`${ph.length} photo(s) · lecture seule`:'Aucune photo (lecture seule)';}
+
+  const hist=ctrls.filter(c=>c.epiId===id).sort((a,b)=>b.date.localeCompare(a.date));
+  document.getElementById('dp-history').innerHTML=hist.length
+    ?hist.map(c=>`<div class="ctrl-item"><div class="ctrl-date">${fmt(c.date)} — ${c.ctrl||'?'}</div><div class="ctrl-res">${oknokB(c.oknok)} ${etatB(c.etat)}</div>${c.notes?`<div style="font-size:12px;color:var(--muted);margin-top:4px">${c.notes}</div>`:''}</div>`).join('')
+    :'<div style="color:var(--muted);font-size:13px">Aucun contrôle enregistré</div>';
+
+  document.getElementById('detailActions').innerHTML=isAdmin()
+    ?`<button class="btn btn-ghost" style="flex:1;justify-content:center" onclick="editDetail()">✏ Modifier</button><button class="btn" style="background:var(--red);color:#fff;flex:1;justify-content:center" onclick="deleteDetail()">✗ Supprimer</button>`
+    :`<div style="font-family:var(--cond);font-size:12px;color:var(--purple);text-align:center;width:100%;padding:8px;background:rgba(168,85,247,.06);border-radius:4px;border:1px solid rgba(168,85,247,.15)">👁️ Consultation uniquement</div>`;
+
+  document.getElementById('detailPanel').classList.add('open');
+  if(isMobile()){
+    // Scroll detail to top
+    setTimeout(()=>{ document.getElementById('detailPanel').scrollTop=0; },50);
+  }
+  render();
+}
+function closeDetail(){detailId=null;document.getElementById('detailPanel').classList.remove('open');render();}
+function editDetail(){if(detailId&&isAdmin())openEdit(detailId);}
+function deleteDetail(){
+  if(!detailId||!isAdmin())return;
+  const e=epis.find(x=>x.id===detailId);
+  if(!confirm(`Supprimer "${e?.nom}" ?`))return;
+  epis=epis.filter(x=>x.id!==detailId);ctrls=ctrls.filter(c=>c.epiId!==detailId);delete photos[detailId];
+  saveAll();closeDetail();renderSidebar();toast('EPI supprimé','warn');
+}
+
+// ═══════════════════════════════════════════
+// PHOTOS
+// ═══════════════════════════════════════════
+function triggerPhoto(){if(isAdmin())document.getElementById('photoUpload').click();}
+function addPhotos(ev){
+  if(!detailId||!isAdmin())return;
+  const files=[...ev.target.files];if(!photos[detailId])photos[detailId]=[];
+  let done=0;
+  files.forEach(f=>{const r=new FileReader();r.onload=e=>{photos[detailId].push(e.target.result);done++;if(done===files.length){saveAll();openDetail(detailId);toast('Photo(s) ajoutée(s)','ok');}};r.readAsDataURL(f);});
+  ev.target.value='';
+}
+function openLightbox(id,i){document.getElementById('lbImg').src=(photos[id]||[])[i]||'';document.getElementById('lightbox').classList.add('open');}
+function closeLightbox(){document.getElementById('lightbox').classList.remove('open');}
+
+// ═══════════════════════════════════════════
+// ADD TECHNICIAN
+// ═══════════════════════════════════════════
+let techEditId=null, selectedColor=PALETTE[0];
+
+function openAddTech(id){
+  techEditId=id||null;
+  const t=id?techs.find(x=>x.id===id):null;
+  document.getElementById('techModalTitle').textContent=t?'Modifier le technicien':'Ajouter un technicien';
+  document.getElementById('t-nom').value=t?.nom||'';
+  document.getElementById('t-poste').value=t?.poste||'';
+  selectedColor=t?.color||PALETTE[0];
+  // Build color grid
+  const cg=document.getElementById('colorGrid');
+  cg.innerHTML=PALETTE.map(c=>`<div class="color-dot${c===selectedColor?' sel':''}" style="background:${c}" onclick="pickColor('${c}')" data-c="${c}"></div>`).join('');
+  document.getElementById('techModal').classList.add('open');
+}
+function closeTechModal(){document.getElementById('techModal').classList.remove('open');}
+function pickColor(c){
+  selectedColor=c;
+  document.querySelectorAll('.color-dot').forEach(el=>{el.classList.toggle('sel',el.dataset.c===c);});
+}
+function saveTech(){
+  const nom=document.getElementById('t-nom').value.trim();
+  const poste=document.getElementById('t-poste').value.trim();
+  if(!nom){toast('Nom obligatoire','warn');return;}
+  if(techEditId){const i=techs.findIndex(x=>x.id===techEditId);techs[i]={...techs[i],nom,poste,color:selectedColor};}
+  else{techs.push({id:'t'+Date.now(),nom,poste,color:selectedColor});}
+  saveAll();closeTechModal();renderSidebar();render();
+  toast(techEditId?'Technicien mis à jour':'Technicien ajouté','ok');
+}
+
+// ═══════════════════════════════════════════
+// ADD / EDIT EPI
+// ═══════════════════════════════════════════
+const fields=['nfcId','type','nom','marque','modele','serie','noteSvc','etat','okNok','norme','dateFab','dateMse','dateCtrl','dateProchain','notes'];
+
+function buildTechCheckboxes(selectedIds){
+  document.getElementById('techCheckboxes').innerHTML=techs.length
+    ?techs.map(t=>{
+        const init=t.nom.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
+        const chk=(selectedIds||[]).includes(t.id)?'checked':'';
+        return `<label class="user-cb-row">
+          <input type="checkbox" value="${t.id}" ${chk}/>
+          <div class="mini-av" style="width:24px;height:24px;font-size:9px;background:${t.color}22;color:${t.color};border-color:${t.color}55;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0">${init}</div>
+          <span class="user-cb-label">${t.nom}</span>
+          <span style="font-size:11px;color:var(--muted)">${t.poste||''}</span>
+        </label>`;
+      }).join('')
+    :'<div style="color:var(--muted);font-size:13px;padding:4px">Aucun technicien — <button onclick="openAddTech()" style="background:none;border:none;color:var(--blue);cursor:pointer;font-family:var(--cond);font-size:12px;font-weight:700">Ajouter</button></div>';
+}
+
+function getSelectedTechs(){
+  return [...document.querySelectorAll('#techCheckboxes input[type=checkbox]:checked')].map(cb=>cb.value);
+}
+
+function openAdd(){
+  if(!isAdmin()){toast('Accès admin requis','err');return;}
+  editId=null;
+  document.getElementById('modalTitle').textContent='Ajouter un EPI';
+  fields.forEach(f=>{const el=document.getElementById('f-'+f);if(el)el.value=f==='etat'?'Bon':f==='okNok'?'OK':'';});
+  const presel=selTechId?[selTechId]:[];
+  buildTechCheckboxes(presel);
+  document.getElementById('addModal').classList.add('open');
+}
+function openEdit(id){
+  if(!isAdmin())return;
+  editId=id;const e=epis.find(x=>x.id===id);if(!e)return;
+  document.getElementById('modalTitle').textContent="Modifier l'EPI";
+  fields.forEach(f=>{const el=document.getElementById('f-'+f);if(el)el.value=e[f]||'';});
+  buildTechCheckboxes(e.techIds||[]);
+  document.getElementById('addModal').classList.add('open');
+}
+function closeAdd(){document.getElementById('addModal').classList.remove('open');}
+function saveEPI(){
+  if(!isAdmin())return;
+  const g=f=>(document.getElementById('f-'+f)||{}).value?.trim()||'';
+  if(!g('nom')||!g('type')){toast('Désignation et catégorie obligatoires','warn');return;}
+  const data={id:editId||'e'+Date.now()};
+  fields.forEach(f=>data[f]=g(f));
+  if(!data.nfcId)data.nfcId=genNfcStr();
+  data.techIds=getSelectedTechs();
+  if(editId){const i=epis.findIndex(x=>x.id===editId);epis[i]=data;toast('EPI mis à jour','ok');}
+  else{epis.push(data);toast('EPI ajouté','ok');}
+  saveAll();closeAdd();renderSidebar();render();
+  if(editId)openDetail(editId);
+}
+const genNfcStr=()=>'NFC-'+Math.random().toString(16).substr(2,8).toUpperCase();
+function genNfc(){document.getElementById('f-nfcId').value=genNfcStr();}
+
+// ═══════════════════════════════════════════
+// CONTRÔLE
+// ═══════════════════════════════════════════
+function openCtrl(epiId){
+  if(!isAdmin())return;
+  document.getElementById('c-epiId').innerHTML='<option value="">— Sélectionner —</option>'+
+    epis.map(e=>`<option value="${e.id}" ${e.id===epiId?'selected':''}>${e.nom} · ${e.nfcId}</option>`).join('');
+  document.getElementById('c-date').value=new Date().toISOString().slice(0,10);
+  ['c-ctrl','c-notes'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('ctrlModal').classList.add('open');
+}
+function closeCtrl(){document.getElementById('ctrlModal').classList.remove('open');}
+function saveCtrl(){
+  if(!isAdmin())return;
+  const epiId=document.getElementById('c-epiId').value;if(!epiId){toast('Sélectionner un EPI','warn');return;}
+  const date=document.getElementById('c-date').value,ctrl=document.getElementById('c-ctrl').value;
+  const oknok=document.getElementById('c-oknok').value,etat=document.getElementById('c-etat').value;
+  const days=parseInt(document.getElementById('c-period').value),notes=document.getElementById('c-notes').value;
+  const next=new Date(date||new Date());next.setDate(next.getDate()+days);
+  const nextStr=next.toISOString().slice(0,10);
+  ctrls.push({id:'c'+Date.now(),epiId,date,ctrl,oknok,etat,notes});
+  const epi=epis.find(e=>e.id===epiId);
+  if(epi){epi.okNok=oknok;epi.etat=etat;epi.dateCtrl=date;epi.dateProchain=nextStr;}
+  saveAll();closeCtrl();renderSidebar();render();toast('Contrôle enregistré','ok');
+  if(detailId===epiId)openDetail(epiId);
+}
+
+// ═══════════════════════════════════════════
+// SCAN MODAL
+// ═══════════════════════════════════════════
+let scanNfcReader=null, lastScannedId=null, scanModalOpen=false;
+
+function openScanModal(){
+  scanModalOpen=true;
+  lastScannedId=null;
+  document.getElementById('scanReady').style.display='block';
+  document.getElementById('scanFound').style.display='none';
+  document.getElementById('scanUnknown').style.display='none';
+  document.getElementById('manualNfc').value='';
+  document.getElementById('scanModal').classList.add('open');
+  // Masquer bouton créer si visiteur
+  const btnCreate=document.getElementById('btnCreateScan');
+  if(btnCreate) btnCreate.style.display=isAdmin()?'':'none';
+  // Activer Web NFC si dispo
+  startScanNfc();
+}
+
+function closeScanModal(){
+  scanModalOpen=false;
+  document.getElementById('scanModal').classList.remove('open');
+  stopScanNfc();
+}
+
+async function startScanNfc(){
+  if(!('NDEFReader' in window)) return;
+  try{
+    scanNfcReader=new NDEFReader();
+    await scanNfcReader.scan();
+    scanNfcReader.onreading=evt=>{
+      if(!scanModalOpen) return;
+      let tagId=null;
+      for(const rec of evt.message.records){
+        if(rec.recordType==='text'){
+          tagId=new TextDecoder(rec.encoding||'utf-8').decode(rec.data).trim();
+          break;
+        }
+        if(rec.recordType==='url'){
+          const url=new TextDecoder().decode(rec.data);
+          const p=new URLSearchParams(url.split('?')[1]||'');
+          tagId=p.get('nfc')||null;
+          break;
+        }
+      }
+      if(!tagId) tagId='NFC-'+(evt.serialNumber||'').replace(/:/g,'').toUpperCase();
+      handleScanResult(tagId);
+    };
+  }catch(e){}
+}
+
+function stopScanNfc(){
+  // L'API Web NFC n'a pas de méthode stop() — on coupe juste le flag
+  scanNfcReader=null;
+}
+
+function manualLookup(){
+  const v=document.getElementById('manualNfc').value.trim();
+  if(!v){document.getElementById('manualNfc').focus();return;}
+  handleScanResult(v);
+}
+
+function handleScanResult(id){
+  lastScannedId=id;
+  const epi=epis.find(e=>e.nfcId.toLowerCase()===id.toLowerCase());
+  if(epi){
+    // EPI trouvé
+    document.getElementById('scanReady').style.display='none';
+    document.getElementById('scanFound').style.display='block';
+    document.getElementById('scanFoundName').textContent=epi.nom+' · '+epi.type;
+    setTimeout(()=>{ closeScanModal(); openDetail(epi.id); },1200);
+  } else {
+    // Tag inconnu → proposer création
+    document.getElementById('scanReady').style.display='none';
+    document.getElementById('scanUnknown').style.display='block';
+    document.getElementById('scanUnknownId').textContent='ID : '+id;
+  }
+}
+
+function createFromScan(){
+  if(!isAdmin()){toast('Accès admin requis','err');return;}
+  closeScanModal();
+  openAdd();
+  setTimeout(()=>{ document.getElementById('f-nfcId').value=lastScannedId||''; },100);
+}
+
+// ═══════════════════════════════════════════
+// NFC
+// ═══════════════════════════════════════════
+const nfcIn=document.getElementById('nfcIn'),nfcLbl=document.getElementById('nfcLbl');let nfcTimer;
+nfcIn.addEventListener('keydown',e=>{if(e.key==='Enter'){lookup(nfcIn.value.trim());nfcIn.value='';}});
+nfcIn.addEventListener('input',()=>{clearTimeout(nfcTimer);nfcTimer=setTimeout(()=>{const v=nfcIn.value.trim();if(v.length>4){lookup(v);nfcIn.value='';}},120);});
+
+function lookup(id){
+  const clean=id.trim();
+  const epi=epis.find(e=>e.nfcId.toLowerCase()===clean.toLowerCase());
+  if(epi){
+    toast(`✓ ${epi.nom} trouvé`,'ok');
+    nfcLbl.textContent='Trouvé : '+epi.nom;
+    // Si on vient d'un scan URL, se connecter auto en visiteur si pas connecté
+    if(!currentUser){
+      currentUser={id:'auto',login:'scan',nom:'Scan NFC',role:'visitor'};
+      startApp();
+    }
+    openDetail(epi.id);
+  } else {
+    toast(`Tag inconnu : ${clean}`,'warn');
+    nfcLbl.textContent='Tag inconnu';
+    if(currentUser&&isAdmin()&&confirm(`Tag NFC "${clean}" non reconnu.\nCréer un nouvel EPI avec cet identifiant ?`)){
+      openAdd();document.getElementById('f-nfcId').value=clean;
+    }
+  }
+  setTimeout(()=>{nfcLbl.textContent='En attente';},4000);
+  // Nettoyer l'URL sans recharger la page
+  if(window.history.replaceState) window.history.replaceState({},'',window.location.pathname);
+}
+
+// ── Lecture du paramètre ?nfc= dans l'URL (scan Android via URL sur tag) ──
+function checkUrlNfc(){
+  const params=new URLSearchParams(window.location.search);
+  const nfcParam=params.get('nfc');
+  if(!nfcParam) return;
+  // Attendre que les données soient chargées puis ouvrir directement
+  const tryLookup=()=>{
+    if(!currentUser){
+      // Auto-login visiteur pour consultation rapide depuis tag
+      currentUser={id:'scan',login:'scan',nom:'Scan NFC',role:'visitor'};
+      startApp();
+    }
+    lookup(nfcParam);
+  };
+  // Petit délai pour laisser le DOM se charger
+  setTimeout(tryLookup, 300);
+}
+
+// ── Web NFC API native (Android Chrome si HTTPS) ──
+(async()=>{
+  if('NDEFReader' in window){
+    try{
+      const r=new NDEFReader();
+      await r.scan();
+      r.onreading=evt=>{
+        // Lire l'enregistrement texte du tag s'il existe
+        let tagId=null;
+        for(const rec of evt.message.records){
+          if(rec.recordType==='text'){
+            const decoder=new TextDecoder(rec.encoding||'utf-8');
+            tagId=decoder.decode(rec.data).trim();
+            break;
+          }
+          if(rec.recordType==='url'){
+            const decoder=new TextDecoder();
+            const url=decoder.decode(rec.data);
+            const p=new URLSearchParams(url.split('?')[1]||'');
+            tagId=p.get('nfc')||null;
+            break;
+          }
+        }
+        // Fallback sur le numéro de série si pas de texte
+        if(!tagId) tagId='NFC-'+(evt.serialNumber||'').replace(/:/g,'').toUpperCase();
+        lookup(tagId);
+      };
+      nfcLbl.textContent='NFC natif actif';
+      toast('Lecteur NFC Web activé','ok');
+    }catch(e){
+      // Pas de Web NFC dispo, mode URL utilisé
+    }
+  }
+})();
+
+// Vérifier le paramètre URL au chargement
+checkUrlNfc();
+
+// ═══════════════════════════════════════════
+// EXPORT
+// ═══════════════════════════════════════════
+function exportCSV(){
+  const H=['Tag NFC','Catégorie','Désignation','Marque','Modèle','S/N','Techniciens','Note service','État','OK/NOK','Norme','Date fab.','Mise en service','Dernier contrôle','Prochain contrôle','Notes'];
+  const rows=epis.map(e=>{
+    const techNames=(e.techIds||[]).map(id=>techById(id)?.nom||id).join(' / ');
+    return [e.nfcId,e.type,e.nom,e.marque,e.modele,e.serie,techNames,e.noteSvc,e.etat,e.okNok,e.norme,e.dateFab,e.dateMse,e.dateCtrl,e.dateProchain,e.notes].map(v=>`"${(v||'').replace(/"/g,'""')}"`).join(',');
+  });
+  const csv=[H.join(','),...rows].join('\n');
+  const a=document.createElement('a');a.href='data:text/csv;charset=utf-8,\uFEFF'+encodeURIComponent(csv);a.download=`registre-epi-${new Date().toISOString().slice(0,10)}.csv`;a.click();
+  toast('Export CSV téléchargé','ok');
+}
+
+// ═══════════════════════════════════════════
+// MOBILE NAV & RESPONSIVE
+// ═══════════════════════════════════════════
+let mobView = 'list'; // 'list' | 'techs'
+
+function mobNav(view){
+  mobView = view;
+  // Update active state
+  document.querySelectorAll('.mob-nav-btn').forEach(b=>b.classList.remove('active'));
+  const btn = document.getElementById('mbn-'+view);
+  if(btn) btn.classList.add('active');
+
+  if(view === 'techs'){
+    openSidebar();
+  } else {
+    closeSidebar();
+  }
+}
+
+function openSidebar(){
+  document.getElementById('sidebar').classList.add('mob-open');
+  document.getElementById('sbOvl').style.display = 'block';
+  document.getElementById('mbn-techs').classList.add('active');
+}
+
+function closeSidebar(){
+  document.getElementById('sidebar').classList.remove('mob-open');
+  document.getElementById('sbOvl').style.display = 'none';
+  document.getElementById('mbn-techs').classList.remove('active');
+}
+
+function isMobile(){ return window.innerWidth <= 768; }
+
+// Render mobile EPI cards (replaces table on mobile)
+function renderMobileCards(rows){
+  const container = document.getElementById('epiCards');
+  if(!container) return;
+  if(!rows.length){
+    container.innerHTML=`<div class="empty"><div class="ico">🪢</div>Aucun EPI trouvé</div>`;
+    return;
+  }
+  container.innerHTML = rows.map(e=>{
+    const assigned=(e.techIds||[]).map(id=>techById(id)).filter(Boolean);
+    const techHTML = assigned.map(t=>{
+      const init=t.nom.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
+      return `<div class="mini-av" style="width:22px;height:22px;font-size:9px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:${t.color}22;color:${t.color};border:1px solid ${t.color}55" title="${t.nom}">${init}</div>`;
+    }).join('');
+    const techName = assigned.length===1 ? assigned[0].nom : assigned.length>1 ? `${assigned.length} techs` : '—';
+    const n = daysTo(e.dateProchain);
+    const dateColor = n===null?'var(--muted)':n<0?'var(--red)':n<=30?'var(--yellow)':'var(--muted)';
+    const dateTxt = fmt(e.dateProchain) + (n!==null&&n<0?' ⚠':'') ;
+    return `<div class="epi-card${detailId===e.id?' epi-card-sel':''}" onclick="openDetail('${e.id}')">
+      <div class="epi-card-top">
+        <div>
+          <div class="epi-card-name">${e.nom}</div>
+          <div class="epi-card-type">${e.type}</div>
+        </div>
+        <div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px;flex-shrink:0">
+          ${etatB(e.etat)}
+          ${oknokB(e.okNok)}
+        </div>
+      </div>
+      <div class="epi-card-bottom">
+        <div class="epi-card-tech">
+          ${techHTML}
+          <span>${techName}</span>
+        </div>
+        <div class="epi-card-date" style="color:${dateColor}">
+          📅 ${dateTxt}
+        </div>
+      </div>
+      <div style="display:flex;gap:6px;flex-wrap:wrap">
+        <span style="font-family:var(--cond);font-size:11px;color:var(--blue);background:rgba(14,165,233,.08);padding:2px 8px;border-radius:3px;border:1px solid rgba(14,165,233,.2)">${e.nfcId||'—'}</span>
+        ${e.marque?`<span style="font-size:11px;color:var(--muted)">${e.marque} ${e.modele||''}</span>`:''}
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// Update bottom nav badge
+function updateMobBadge(){
+  const nok=epis.filter(e=>e.okNok==='NOK').length;
+  const exp=epis.filter(e=>{const n=daysTo(e.dateProchain);return n!==null&&n<0;}).length;
+  const total=nok+exp;
+  const listBtn=document.getElementById('mbn-list');
+  if(!listBtn) return;
+  const existing=listBtn.querySelector('.mob-badge');
+  if(existing) existing.remove();
+  if(total>0) listBtn.innerHTML=`<span class="mob-badge">${total}</span>`+listBtn.innerHTML;
+}
+
+// Patch startApp to set mobile user icon
+const _origStartApp = startApp;
+function startApp(){
+  _origStartApp();
+  const ico = document.getElementById('mobUserIco');
+  if(ico) ico.textContent = currentUser?.role==='admin' ? '🛡️' : '👁️';
+  // Set default active nav
+  document.getElementById('mbn-list')?.classList.add('active');
+}
+
+// ═══════════════════════════════════════════
+// TOAST
+// ═══════════════════════════════════════════
+function toast(msg,type='ok'){
+  const colors={ok:'#10b981',warn:'#f59e0b',err:'#ef4444'},icons={ok:'✓',warn:'⚠',err:'✗'};
+  const el=document.createElement('div');el.className=`toast toast-${type}`;
+  el.innerHTML=`<span style="color:${colors[type]}">${icons[type]}</span>${msg}`;
+  document.getElementById('toasts').appendChild(el);
+  setTimeout(()=>{el.style.opacity='0';el.style.transform='translateY(6px)';el.style.transition='.25s';setTimeout(()=>el.remove(),250);},3000);
+}
+</script>
+</body>
+</html>
