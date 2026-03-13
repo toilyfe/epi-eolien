@@ -829,7 +829,7 @@ function toggleMenu(){
 }
 function closeMenu(){document.getElementById('userMenu').style.display='none';document.getElementById('menuOvl').style.display='none';}
 
-function openUsersModal(){renderUsersTable();document.getElementById('usersModal').classList.add('open');}
+function openUsersModal(){closeAll();renderUsersTable();document.getElementById('usersModal').classList.add('open');}
 function closeUsersModal(){document.getElementById('usersModal').classList.remove('open');}
 function renderUsersTable(){
   document.getElementById('usersTable').innerHTML=
@@ -1070,7 +1070,19 @@ function srt(k){sortD=sortK===k?-sortD:1;sortK=k;render();}
 // ═══════════════════════════════════════════
 // DETAIL PANEL
 // ═══════════════════════════════════════════
+function closeAll(){
+  // Ferme tous les panneaux ouverts sauf ce qu'on va ouvrir
+  document.getElementById('detailPanel').classList.remove('open');
+  document.getElementById('addModal').classList.remove('open');
+  document.getElementById('ctrlModal').classList.remove('open');
+  document.getElementById('techModal').classList.remove('open');
+  document.getElementById('usersModal').classList.remove('open');
+  document.getElementById('scanModal').classList.remove('open');
+  closeSidebar();
+}
+
 function openDetail(id){
+  closeAll();
   detailId=id;const e=epis.find(x=>x.id===id);if(!e)return;
   document.getElementById('dp-nfc').textContent=e.nfcId||'';
   document.getElementById('dp-nom').textContent=e.nom||'';
@@ -1166,6 +1178,7 @@ function openAddTech(id){
   // Build color grid
   const cg=document.getElementById('colorGrid');
   cg.innerHTML=PALETTE.map(c=>`<div class="color-dot${c===selectedColor?' sel':''}" style="background:${c}" onclick="pickColor('${c}')" data-c="${c}"></div>`).join('');
+  closeAll();
   document.getElementById('techModal').classList.add('open');
 }
 function closeTechModal(){document.getElementById('techModal').classList.remove('open');}
@@ -1214,6 +1227,7 @@ function openAdd(){
   fields.forEach(f=>{const el=document.getElementById('f-'+f);if(el)el.value=f==='etat'?'Bon':f==='okNok'?'OK':'';});
   const presel=selTechId?[selTechId]:[];
   buildTechCheckboxes(presel);
+  closeAll();
   document.getElementById('addModal').classList.add('open');
 }
 function openEdit(id){
@@ -1222,6 +1236,7 @@ function openEdit(id){
   document.getElementById('modalTitle').textContent="Modifier l'EPI";
   fields.forEach(f=>{const el=document.getElementById('f-'+f);if(el)el.value=e[f]||'';});
   buildTechCheckboxes(e.techIds||[]);
+  closeAll();
   document.getElementById('addModal').classList.add('open');
 }
 function closeAdd(){document.getElementById('addModal').classList.remove('open');}
@@ -1250,6 +1265,7 @@ function openCtrl(epiId){
     epis.map(e=>`<option value="${e.id}" ${e.id===epiId?'selected':''}>${e.nom} · ${e.nfcId}</option>`).join('');
   document.getElementById('c-date').value=new Date().toISOString().slice(0,10);
   ['c-ctrl','c-notes'].forEach(id=>document.getElementById(id).value='');
+  closeAll();
   document.getElementById('ctrlModal').classList.add('open');
 }
 function closeCtrl(){document.getElementById('ctrlModal').classList.remove('open');}
@@ -1274,6 +1290,7 @@ function saveCtrl(){
 let scanNfcReader=null, lastScannedId=null, scanModalOpen=false;
 
 function openScanModal(){
+  closeAll();
   scanModalOpen=true;
   lastScannedId=null;
   document.getElementById('scanReady').style.display='block';
