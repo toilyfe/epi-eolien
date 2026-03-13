@@ -198,7 +198,7 @@ td{padding:10px 12px;font-size:13px;vertical-align:middle}
 .assignee-chip .mini-av{width:20px;height:20px;font-size:8px}
 
 /* MODALS */
-.overlay{position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:100;display:none;align-items:center;justify-content:center;backdrop-filter:blur(6px)}
+.overlay{position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:900;display:none;align-items:center;justify-content:center;backdrop-filter:blur(6px)}
 .overlay.open{display:flex}
 .modal{background:var(--s1);border:1px solid var(--border);border-radius:8px;padding:28px;width:640px;max-width:96vw;max-height:92vh;overflow-y:auto;animation:slideUp .2s ease}
 .modal-title{font-family:var(--cond);font-size:20px;font-weight:800;margin-bottom:20px;display:flex;justify-content:space-between;align-items:center;letter-spacing:.04em}
@@ -361,7 +361,7 @@ td{padding:10px 12px;font-size:13px;vertical-align:middle}
   .sb-drawer-ovl{
     position:fixed;top:0;left:0;right:0;bottom:0;
     background:rgba(0,0,0,.6);
-    z-index:590;
+    z-index:850;
     display:none;
     -webkit-tap-highlight-color:transparent;
   }
@@ -387,7 +387,7 @@ td{padding:10px 12px;font-size:13px;vertical-align:middle}
   .mob-nav{
     display:grid !important;
     position:fixed;bottom:0;left:0;right:0;
-    height:64px;z-index:700;
+    height:64px;z-index:960;
     background:var(--s1);
     border-top:1px solid var(--border);
   }
@@ -488,7 +488,7 @@ td{padding:10px 12px;font-size:13px;vertical-align:middle}
 </div>
 
 <!-- SCAN MODAL -->
-<div class="overlay" id="scanModal" style="z-index:500">
+<div class="overlay" id="scanModal" style="z-index:950" onclick="if(event.target===this)closeScanModal()">
   <div style="background:var(--s1);border:1px solid var(--border);border-radius:12px;padding:32px;width:360px;max-width:94vw;text-align:center;animation:slideUp .2s ease;position:relative">
     <button onclick="closeScanModal()" style="position:absolute;top:14px;right:16px;background:none;border:none;color:var(--muted);font-size:20px;cursor:pointer">✕</button>
 
@@ -587,7 +587,7 @@ td{padding:10px 12px;font-size:13px;vertical-align:middle}
       </table>
     </div>
     <!-- MOBILE EPI CARDS -->
-    <div class="epi-cards" id="epiCards"></div>
+    <div class="epi-cards" id="epiCards" onclick="if(event.target===this)closeDetail()"></div>
   </div>
 
   <!-- DETAIL PANEL -->
@@ -640,7 +640,7 @@ td{padding:10px 12px;font-size:13px;vertical-align:middle}
 </div>
 
 <!-- ADD/EDIT EPI MODAL -->
-<div class="overlay" id="addModal">
+<div class="overlay" id="addModal" onclick="if(event.target===this)closeAdd()">
   <div class="modal">
     <div class="modal-title"><span id="modalTitle">Ajouter un EPI</span><button class="modal-close" onclick="closeAdd()">✕</button></div>
     <div class="fgrid">
@@ -674,7 +674,7 @@ td{padding:10px 12px;font-size:13px;vertical-align:middle}
 </div>
 
 <!-- ADD TECHNICIAN MODAL -->
-<div class="overlay" id="techModal">
+<div class="overlay" id="techModal" onclick="if(event.target===this)closeTechModal()">
   <div class="modal" style="width:420px">
     <div class="modal-title"><span id="techModalTitle">Ajouter un technicien</span><button class="modal-close" onclick="closeTechModal()">✕</button></div>
     <div class="fg"><label>Nom complet</label><input type="text" id="t-nom" placeholder="ex: Lucas Bernard"/></div>
@@ -687,7 +687,7 @@ td{padding:10px 12px;font-size:13px;vertical-align:middle}
 </div>
 
 <!-- CTRL MODAL -->
-<div class="overlay" id="ctrlModal">
+<div class="overlay" id="ctrlModal" onclick="if(event.target===this)closeCtrl()">
   <div class="modal" style="width:480px">
     <div class="modal-title"><span>Enregistrer un contrôle</span><button class="modal-close" onclick="closeCtrl()">✕</button></div>
     <div class="fg"><label>EPI</label><select id="c-epiId"><option value="">Sélectionner un EPI…</option></select></div>
@@ -704,7 +704,7 @@ td{padding:10px 12px;font-size:13px;vertical-align:middle}
 </div>
 
 <!-- USERS (comptes) MODAL -->
-<div class="overlay" id="usersModal">
+<div class="overlay" id="usersModal" onclick="if(event.target===this)closeUsersModal()">
   <div class="modal" style="width:560px">
     <div class="modal-title"><span>🔐 Gestion des comptes</span><button class="modal-close" onclick="closeUsersModal()">✕</button></div>
     <div style="background:var(--s2);border:1px solid var(--border);border-radius:6px;padding:20px;margin-bottom:20px">
@@ -724,7 +724,7 @@ td{padding:10px 12px;font-size:13px;vertical-align:middle}
 </div>
 
 <!-- LIGHTBOX -->
-<div class="overlay" id="lightbox" onclick="closeLightbox()"><img id="lbImg" style="max-width:90vw;max-height:90vh;border-radius:6px;object-fit:contain"/></div>
+<div class="overlay" id="lightbox" style="z-index:980" onclick="closeLightbox()"><img id="lbImg" style="max-width:90vw;max-height:90vh;border-radius:6px;object-fit:contain"/></div>
 
 <!-- USER MENU -->
 <div class="user-menu" id="userMenu">
@@ -1071,14 +1071,16 @@ function srt(k){sortD=sortK===k?-sortD:1;sortK=k;render();}
 // DETAIL PANEL
 // ═══════════════════════════════════════════
 function closeAll(){
-  // Ferme tous les panneaux ouverts sauf ce qu'on va ouvrir
+  detailId=null;
   document.getElementById('detailPanel').classList.remove('open');
   document.getElementById('addModal').classList.remove('open');
   document.getElementById('ctrlModal').classList.remove('open');
   document.getElementById('techModal').classList.remove('open');
   document.getElementById('usersModal').classList.remove('open');
   document.getElementById('scanModal').classList.remove('open');
-  closeSidebar();
+  document.getElementById('lightbox').classList.remove('open');
+  document.getElementById('sidebar').classList.remove('mob-open');
+  document.getElementById('sbOvl').classList.remove('visible');
 }
 
 function openDetail(id){
@@ -1480,13 +1482,20 @@ let mobView = 'list'; // 'list' | 'techs'
 
 function mobNav(view){
   mobView = view;
-  // Update active state
   document.querySelectorAll('.mob-nav-btn').forEach(b=>b.classList.remove('active'));
   const btn = document.getElementById('mbn-'+view);
   if(btn) btn.classList.add('active');
 
   if(view === 'techs'){
+    // Ferme le detail avant d'ouvrir la sidebar
+    document.getElementById('detailPanel').classList.remove('open');
+    detailId=null;
     openSidebar();
+  } else if(view === 'list'){
+    // Ferme sidebar et detail
+    closeSidebar();
+    document.getElementById('detailPanel').classList.remove('open');
+    detailId=null;
   } else {
     closeSidebar();
   }
